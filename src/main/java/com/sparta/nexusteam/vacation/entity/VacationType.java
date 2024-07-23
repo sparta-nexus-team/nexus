@@ -8,10 +8,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name="vacation_type")
+@NoArgsConstructor
 public class VacationType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +24,9 @@ public class VacationType {
 
     @Column(nullable = false)
     private int days;
+
+    public VacationType(String name, int days) {
+        this.name = name;
+        this.days = days;
+    }
 }

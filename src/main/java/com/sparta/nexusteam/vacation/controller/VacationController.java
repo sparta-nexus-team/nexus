@@ -11,7 +11,7 @@ import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
 import com.sparta.nexusteam.vacation.dto.VacationResponse;
 import com.sparta.nexusteam.vacation.dto.VacationTypeResponse;
-import com.sparta.nexusteam.vacation.service.VacationService;
+import com.sparta.nexusteam.vacation.service.VacationServiceImpl;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class VacationController {
 
-    private final VacationService vacationService;
+    private final VacationServiceImpl vacationServiceImpl;
 
 
     /**
@@ -44,7 +44,7 @@ public class VacationController {
             return getFieldErrorResponseEntity(bindingResult, "휴가 종류 등록 실패");
         }
         try {
-            VacationTypeResponse responseDto = vacationService.createVacationType(requestDto);
+            VacationTypeResponse responseDto = vacationServiceImpl.createVacationType(requestDto);
             return getResponseEntity(responseDto, "휴가 종류 등록 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -63,7 +63,7 @@ public class VacationController {
             return getFieldErrorResponseEntity(bindingResult, "휴가 등록 실패");
         }
         try {
-            VacationResponse responseDto = vacationService.createVacation(vacationTypeId,
+            VacationResponse responseDto = vacationServiceImpl.createVacation(vacationTypeId,
                     requestDto, userDetails.getEmployee());
             return getResponseEntity(responseDto, "휴가 등록 성공");
         } catch (Exception e) {
@@ -75,9 +75,11 @@ public class VacationController {
      * 휴가 사용전 리스트 조회
      */
     @GetMapping("/vacation/before")
-    public ResponseEntity<CommonResponse> readVacationsBeforeUse() {
+    public ResponseEntity<CommonResponse> getVacationsBeforeUse(
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<VacationResponse> responseDtoList = vacationService.readVacationsBeforeUse();
+            List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsBeforeUse(
+                    userDetails.getEmployee);
             return getResponseEntity(responseDtoList, "휴가 사용전 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -88,9 +90,11 @@ public class VacationController {
      * 휴가 사용후 리스트 조회
      */
     @GetMapping("/vacation/after")
-    public ResponseEntity<CommonResponse> readVacationsAfterUse() {
+    public ResponseEntity<CommonResponse> getVacationsAfterUse(
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<VacationResponse> responseDtoList = vacationService.readVacationsAfterUse();
+            List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsAfterUse(
+                    userDetails.getEmployee);
             return getResponseEntity(responseDtoList, "휴가 사용후 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -101,9 +105,9 @@ public class VacationController {
      * 특정 휴가 조회
      */
     @GetMapping("/vacation/{vacationId}")
-    public ResponseEntity<CommonResponse> readVacation(@PathVariable Long vacationId) {
+    public ResponseEntity<CommonResponse> getVacation(@PathVariable Long vacationId) {
         try {
-            VacationResponse responseDto = vacationService.readVacation(vacationId);
+            VacationResponse responseDto = vacationServiceImpl.getVacation(vacationId);
             return getResponseEntity(responseDto, "특정 휴가 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -114,9 +118,9 @@ public class VacationController {
      * 승인전 휴가 리스트 조회
      */
     @GetMapping("/vacation/approval")
-    public ResponseEntity<CommonResponse> readVacationsBoforeApporval() {
+    public ResponseEntity<CommonResponse> getPendingVacations() {
         try {
-            List<VacationResponse> responseDtoList = vacationService.readVacationsBoforeApporval();
+            List<VacationResponse> responseDtoList = vacationServiceImpl.getPendingVacations();
             return getResponseEntity(responseDtoList, "승인전 휴가 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -127,9 +131,9 @@ public class VacationController {
      * 휴가 종류 조회
      */
     @GetMapping("/vacation-type")
-    public ResponseEntity<CommonResponse> readVacationTypes() {
+    public ResponseEntity<CommonResponse> getVacationTypes() {
         try {
-            List<VacationTypeResponse> responseDtoList = vacationService.readVacationTypes();
+            List<VacationTypeResponse> responseDtoList = vacationServiceImpl.getVacationTypes();
             return getResponseEntity(responseDtoList, "휴가 종류 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -148,7 +152,8 @@ public class VacationController {
             return getFieldErrorResponseEntity(bindingResult, "휴가 승인/거절 실패");
         }
         try {
-            VacationResponse responseDto = vacationService.updateVacationApprovalStatus(vacationId,
+            VacationResponse responseDto = vacationServiceImpl.updateVacationApprovalStatus(
+                    vacationId,
                     requestDto);
             return getResponseEntity(responseDto, "휴가 등록 성공");
         } catch (Exception e) {
@@ -162,7 +167,7 @@ public class VacationController {
     @DeleteMapping("/vacation/{vacationId}")
     public ResponseEntity<CommonResponse> deleteVacation(@PathVariable Long vacationId) {
         try {
-            vacationService.deleteVacation(vacationId);
+            vacationServiceImpl.deleteVacation(vacationId);
             return getResponseEntity(null, "휴가 삭제 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
