@@ -1,5 +1,7 @@
 package com.sparta.nexusteam.employee.service;
 
+import com.sparta.nexusteam.employee.dto.EmployeeRequest;
+import com.sparta.nexusteam.employee.dto.EmployeeResponse;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
 import com.sparta.nexusteam.employee.dto.SignupResponse;
 import com.sparta.nexusteam.employee.entity.Employee;
@@ -17,7 +19,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -52,7 +56,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,role);
+
         employeeRepository.save(employee);
+
         return new SignupResponse(employee);
     }
 
@@ -60,6 +66,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Long logout(Employee employee, HttpServletResponse response) {
         Long userId = employee.getId();
         employee.updateRefreshToken(null);
+
         employeeRepository.save(employee);
 
         return userId;
@@ -71,6 +78,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         String initialUsername = "user_" + UUID.randomUUID().toString().substring(0, 8);
         String initialPassword = PasswordGenerator.generatePassword();
         Invitation invitation = new Invitation(email, token, new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000), initialUsername, passwordEncoder.encode(initialPassword));
+
         invitationRepository.save(invitation);
 
         return sendInvitationEmail(email, token, initialUsername, initialPassword);
@@ -80,14 +88,85 @@ public class EmployeeServiceImpl implements EmployeeService {
     public SignupResponse setNewEmployee(String token, SignupRequest signupRequest) {
         Invitation invitation = invitationRepository.findByToken(token);
         if (invitation == null) {
-            throw new RuntimeException ("Invalid token");
+            throw new RuntimeException ("유효하지 않은 token");
         }
 
         UserRole role = UserRole.USER;
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
         Employee employee = new Employee(signupRequest,encodedPassword, Position.WORKER ,role);
+
         employeeRepository.save(employee);
+
         return new SignupResponse(employee);
+    }
+
+    @Override
+    public List<EmployeeResponse> getAllEmployees() {
+        List<Employee> employees = employeeRepository.findAll();
+        List<EmployeeResponse> responseList = new ArrayList<>();
+
+        for(Employee employee: employees){
+            EmployeeResponse employeeResponse = new EmployeeResponse(employee);
+            responseList.add(employeeResponse);
+        }
+
+        return responseList;
+    }
+
+    @Override
+    public List<EmployeeResponse> getEmployeesByDepartment(String departmentName) {
+        List<Employee> employees = employeeRepository.findByDepartmentName(departmentName);
+        List<EmployeeResponse> responseList = new ArrayList<>();
+
+        for(Employee employee: employees){
+            EmployeeResponse employeeResponse = new EmployeeResponse(employee);
+            responseList.add(employeeResponse);
+        }
+
+        return responseList;
+    }
+
+    @Override
+    public List<EmployeeResponse> getEmployeesByUserName(String userName) {
+        List<Employee> employees = employeeRepository.findByUserName(userName);
+        List<EmployeeResponse> responseList = new ArrayList<>();
+
+        for(Employee employee: employees){
+            EmployeeResponse employeeResponse = new EmployeeResponse(employee);
+            responseList.add(employeeResponse);
+        }
+
+        return responseList;
+    }
+
+    @Override
+    public EmployeeResponse getEmployeeById(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
+
+        return new EmployeeResponse(employee);
+    }
+
+    @Override
+    public EmployeeResponse updateEmployee(Long id, EmployeeRequest request) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
+
+        employee.updateProfile(request);
+
+        employeeRepository.save(employee);
+
+        return new EmployeeResponse(employee);
+    }
+
+    @Override
+    public Long deleteEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
+
+        employeeRepository.delete(employee);
+
+        return employee.getId();
     }
 
     private String sendInvitationEmail(String email, String token, String initialUsername, String initialPassword) {
