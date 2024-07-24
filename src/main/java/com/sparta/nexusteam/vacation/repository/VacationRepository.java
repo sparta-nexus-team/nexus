@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VacationRepository extends JpaRepository<Vacation, Long> {
-    List<Vacation> findByEndDateBeforeAndEmployeeId(LocalDateTime currentTime, Long employeeId);
-    List<Vacation> findByEndDateAfterAndEmployeeId(LocalDateTime currentTime, Long employeeId);
-    List<Vacation> findByApprovalStatus(ApprovalStatus approvalStatus);
+    List<Vacation> findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(LocalDateTime currentTime, Long employeeId);
+    List<Vacation> findByEndDateAfterAndEmployeeIdOrderByStartDateDesc(LocalDateTime currentTime, Long employeeId);
+    List<Vacation> findByApprovalStatusOrderByStartDateAsc(ApprovalStatus approvalStatus);
 }
