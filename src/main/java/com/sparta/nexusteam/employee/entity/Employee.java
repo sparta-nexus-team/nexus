@@ -21,7 +21,6 @@ public class Employee {
     @Column(nullable = false, unique = true)
     private String accountId; //로그인 아이디
 
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[a-z\\d@$!%*?&]{8,}$") //소문자,숫자,특수기호,8자이상
     @Column(nullable = false)
     private String password;
 

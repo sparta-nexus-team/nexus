@@ -184,7 +184,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             mailSender.send(emailMessage);
             return "Invitation email sent successfully.";
         } catch (Exception e) {
-            return "Failed to send invitation email.";
+            throw new RuntimeException("전송 실패");
         }
     }
 }
