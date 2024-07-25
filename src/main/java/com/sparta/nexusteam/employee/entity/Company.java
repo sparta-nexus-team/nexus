@@ -2,12 +2,14 @@ package com.sparta.nexusteam.employee.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
 @Entity
-public class Department {
+@Getter
+@NoArgsConstructor
+public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,13 +17,13 @@ public class Department {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "company")
     private List<Employee> employees;
 
-    @ManyToOne
-    private Company company;
+    @OneToMany(mappedBy = "department")
+    private List<Department> departments;
 
-    public void updateName(String newName) {
-        this.name = newName;
+    public Company(String name) {
+        this.name = name;
     }
 }

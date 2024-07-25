@@ -20,14 +20,12 @@ public class Invitation {
     private String email;
     private String token;
     private Date expiryDate;
-    private String initialUsername;
-    private String initialPassword;
+    private String companyName;
 
-    public Invitation(String email, String token, Date expiryDate, String initialUsername, String initialPassword) {
+    public Invitation(String email, String token, Date expiryDate, String companyName) {
         this.email = email;
         this.token = token;
         this.expiryDate = expiryDate;
-        this.initialUsername = initialUsername;
-        this.initialPassword = initialPassword;
+        this.companyName = companyName;
     }
 }

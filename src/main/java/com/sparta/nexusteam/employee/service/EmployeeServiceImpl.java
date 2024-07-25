@@ -1,19 +1,12 @@
 package com.sparta.nexusteam.employee.service;
 
-import com.sparta.nexusteam.employee.dto.EmployeeRequest;
-import com.sparta.nexusteam.employee.dto.EmployeeResponse;
-import com.sparta.nexusteam.employee.dto.SignupRequest;
-import com.sparta.nexusteam.employee.dto.SignupResponse;
-import com.sparta.nexusteam.employee.entity.Employee;
-import com.sparta.nexusteam.employee.entity.Invitation;
-import com.sparta.nexusteam.employee.entity.Position;
-import com.sparta.nexusteam.employee.entity.UserRole;
+import com.sparta.nexusteam.employee.dto.*;
+import com.sparta.nexusteam.employee.entity.*;
+import com.sparta.nexusteam.employee.repository.CompanyRepository;
 import com.sparta.nexusteam.employee.repository.EmployeeRepository;
 import com.sparta.nexusteam.employee.repository.InvitationRepository;
-import com.sparta.nexusteam.employee.util.PasswordGenerator;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,30 +25,27 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final InvitationRepository invitationRepository;
 
+    private final CompanyRepository companyRepository;
+
     private final JavaMailSender mailSender;
 
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${admin.token}")
-    private String adminToken;
 
     @Override
     public SignupResponse signup(SignupRequest request) {
         if (employeeRepository.existsByAccountId(request.getAccountId())) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
-
-        UserRole role = UserRole.USER;
-
-        if (request.isAdmin()) {
-            if (!adminToken.equals(request.getAdminToken())) {
-                throw new IllegalArgumentException("어드민 토큰이 일치하지 않습니다.");
-            }
-            role = UserRole.MANAGER;
+        if(companyRepository.existsByName(request.getCompanyName())) {
+            throw new IllegalArgumentException("이미 존재하는 회사입니다.");
         }
 
+        Company company = new Company(request.getCompanyName());
+
+        companyRepository.save(company);
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,role);
+        Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,UserRole.MANAGER, company);
 
         employeeRepository.save(employee);
 
@@ -73,27 +63,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public String inviteEmployee(String email) {
+    public String inviteEmployee(String email, Employee employee) {
         String token = UUID.randomUUID().toString();
-        String initialUsername = "user_" + UUID.randomUUID().toString().substring(0, 8);
-        String initialPassword = PasswordGenerator.generatePassword();
-        Invitation invitation = new Invitation(email, token, new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000), initialUsername, passwordEncoder.encode(initialPassword));
+        Invitation invitation = new Invitation(email, token, new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000), employee.getCompany().getName());
 
         invitationRepository.save(invitation);
 
-        return sendInvitationEmail(email, token, initialUsername, initialPassword);
+        return sendInvitationEmail(email, token);
     }
 
     @Override
-    public SignupResponse setNewEmployee(String token, SignupRequest signupRequest) {
+    public SignupResponse setNewEmployee(String token, InviteSignupRequest invitesignupRequest) {
         Invitation invitation = invitationRepository.findByToken(token);
         if (invitation == null) {
             throw new RuntimeException ("유효하지 않은 token");
         }
 
-        UserRole role = UserRole.USER;
-        String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
-        Employee employee = new Employee(signupRequest,encodedPassword, Position.WORKER ,role);
+        Company company = companyRepository.findByName(invitation.getCompanyName());
+        String encodedPassword = passwordEncoder.encode(invitesignupRequest.getPassword());
+        Employee employee = new Employee(invitesignupRequest,encodedPassword, Position.WORKER ,UserRole.USER, company);
 
         employeeRepository.save(employee);
 
@@ -101,8 +89,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeResponse> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAll();
+    public List<EmployeeResponse> getAllEmployees(Employee employeeDetail) {
+        List<Employee> employees = employeeRepository.findAllByCompany(employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
 
         for(Employee employee: employees){
@@ -114,8 +102,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeResponse> getEmployeesByDepartment(String departmentName) {
-        List<Employee> employees = employeeRepository.findByDepartmentName(departmentName);
+    public List<EmployeeResponse> getEmployeesByDepartment(String departmentName, Employee employeeDetail) {
+        List<Employee> employees = employeeRepository.findByDepartmentNameAndCompany(departmentName, employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
 
         for(Employee employee: employees){
@@ -127,8 +115,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeResponse> getEmployeesByUserName(String userName) {
-        List<Employee> employees = employeeRepository.findByUserName(userName);
+    public List<EmployeeResponse> getEmployeesByUserName(String userName, Employee employeeDetail) {
+        List<Employee> employees = employeeRepository.findByUserNameAndCompany(userName, employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
 
         for(Employee employee: employees){
@@ -169,12 +157,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employee.getId();
     }
 
-    private String sendInvitationEmail(String email, String token, String initialUsername, String initialPassword) {
+    private String sendInvitationEmail(String email, String token) {
         String subject = "Employee Invitation";
-        String confirmationUrl = "/registerEmployee?token=" + token;
-        String message = "Click the link to register: " + confirmationUrl + "\n" +
-                "Your username: " + initialUsername + "\n" +
-                "Your password: " + initialPassword;
+        String confirmationUrl = "/employee/registerEmployee?token=" + token;
+        String message = "Click the link to register: " + confirmationUrl + "\n";
 
         try {
             SimpleMailMessage emailMessage = new SimpleMailMessage();
