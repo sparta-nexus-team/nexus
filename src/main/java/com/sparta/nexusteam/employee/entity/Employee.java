@@ -1,6 +1,7 @@
 package com.sparta.nexusteam.employee.entity;
 
 import com.sparta.nexusteam.employee.dto.EmployeeRequest;
+import com.sparta.nexusteam.employee.dto.InviteSignupRequest;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -21,7 +22,6 @@ public class Employee {
     @Column(nullable = false, unique = true)
     private String accountId; //로그인 아이디
 
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[a-z\\d@$!%*?&]{8,}$") //소문자,숫자,특수기호,8자이상
     @Column(nullable = false)
     private String password;
 
@@ -54,7 +54,11 @@ public class Employee {
     @ManyToOne
     private Department department;
 
-    public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role) {
+    @ManyToOne
+    @Column(nullable = false)
+    private Company company;
+
+    public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company) {
         accountId = request.getAccountId();
         password = encodedPassword;
         userName = request.getUserName();
@@ -63,6 +67,19 @@ public class Employee {
         address = request.getAddress();
         this.position = position;
         this.role = role;
+        this.company = company;
+    }
+
+    public Employee(InviteSignupRequest request, String encodedPassword, Position position, UserRole role, Company company) {
+        accountId = request.getAccountId();
+        password = encodedPassword;
+        userName = request.getUserName();
+        email = request.getEmail();
+        phoneNumber = request.getPhoneNumber();
+        address = request.getAddress();
+        this.position = position;
+        this.role = role;
+        this.company = company;
     }
 
     public void updateRefreshToken(String newRefreshToken) {

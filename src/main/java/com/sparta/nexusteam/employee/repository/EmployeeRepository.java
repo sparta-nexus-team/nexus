@@ -1,5 +1,6 @@
 package com.sparta.nexusteam.employee.repository;
 
+import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,7 +11,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     boolean existsByAccountId(String accountId);
 
-    List<Employee> findByDepartmentName(String departmentName);
+    List<Employee> findByDepartmentNameAndCompany(String departmentName, Company company);
 
-    List<Employee> findByUserName(String username);
+    List<Employee> findByUserNameAndCompany(String username, Company company);
+
+    List<Employee> findAllByCompany(Company company);
 }
