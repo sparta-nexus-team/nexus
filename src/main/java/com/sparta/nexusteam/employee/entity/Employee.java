@@ -1,5 +1,6 @@
 package com.sparta.nexusteam.employee.entity;
 
+import com.sparta.nexusteam.employee.dto.EmployeeRequest;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -39,8 +40,9 @@ public class Employee {
     @Column(nullable = false)
     private String address;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String position; //직급
+    private Position position; //직급
 
 
     @Enumerated(EnumType.STRING)
@@ -49,17 +51,31 @@ public class Employee {
 
     private String refreshToken;
 
-    public Employee(SignupRequest request, String encodedPassword, UserRole role) {
+    @ManyToOne
+    private Department department;
+
+    public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role) {
         accountId = request.getAccountId();
         password = encodedPassword;
         userName = request.getUserName();
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
+        this.position = position;
         this.role = role;
     }
 
     public void updateRefreshToken(String newRefreshToken) {
         refreshToken = newRefreshToken;
+    }
+
+    public void updateProfile(EmployeeRequest request) {
+        userName = request.getUserName();
+        email = request.getEmail();
+        phoneNumber = request.getPhoneNumber();
+        address = request.getAddress();
+        position = request.getPosition();
+        department = request.getDepartment();
+        role = request.getRole();
     }
 }

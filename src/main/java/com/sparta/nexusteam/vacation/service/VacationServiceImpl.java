@@ -44,14 +44,14 @@ public class VacationServiceImpl implements VacationService {
 
     @Override
     public List<VacationResponse> getVacationsBeforeUse(Employee employee) {
-        List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(
+        List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdOrderByStartDateAsc(
                 LocalDateTime.now(), employee.getId());
         return vacationList.stream().map(VacationResponse::new).toList();
     }
 
     @Override
     public List<VacationResponse> getVacationsAfterUse(Employee employee) {
-        List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdOrderByStartDateDesc(
+        List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(
                 LocalDateTime.now(), employee.getId());
         return vacationList.stream().map(VacationResponse::new).toList();
     }
