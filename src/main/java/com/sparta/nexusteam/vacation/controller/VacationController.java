@@ -4,6 +4,7 @@ package com.sparta.nexusteam.vacation.controller;
 import static com.sparta.nexusteam.base.ControllerUtil.getBadRequestResponseEntity;
 import static com.sparta.nexusteam.base.ControllerUtil.getFieldErrorResponseEntity;
 import static com.sparta.nexusteam.base.ControllerUtil.getResponseEntity;
+import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 import com.sparta.nexusteam.base.CommonResponse;
 import com.sparta.nexusteam.security.UserDetailsImpl;
@@ -16,6 +17,7 @@ import com.sparta.nexusteam.vacation.service.VacationServiceImpl;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;

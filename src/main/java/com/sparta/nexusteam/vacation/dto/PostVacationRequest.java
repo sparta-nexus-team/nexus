@@ -5,14 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class PostVacationRequest {
-    @NotBlank(message = "시작일시는 빈칸이 될 수 없습니다.")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime startDate;
 
-    @NotBlank(message = "종료일시는 빈칸이 될 수 없습니다.")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endDate;
 }

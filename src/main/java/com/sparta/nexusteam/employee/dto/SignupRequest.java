@@ -11,7 +11,6 @@ public class SignupRequest {
     private String accountId;
 
     @NotBlank(message = "비밀번호는 빈칸이 될 수 없습니다")
-    @Pattern(regexp = "^(01[016789])-?(\\d{3,4})-?(\\d{4})$", message = "영어 소문자, 숫자, 특수기호를 포함한 8자이상을 입력해주세요")
     private String password;
 
     @NotBlank(message = "이름은 빈칸이 될 수 없습니다")
@@ -22,6 +21,7 @@ public class SignupRequest {
     private String email;
 
     @NotBlank(message = "전화번호는 빈칸이 될 수 없습니다")
+    @Pattern(regexp = "^(01[016789])-?(\\d{3,4})-?(\\d{4})$")
     private String phoneNumber;
 
     @NotBlank(message = "주소는 빈칸이 될 수 없습니다")
