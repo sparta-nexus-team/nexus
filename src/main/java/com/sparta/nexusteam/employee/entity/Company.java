@@ -20,7 +20,7 @@ public class Company {
     @OneToMany(mappedBy = "company")
     private List<Employee> employees;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "company")
     private List<Department> departments;
 
     public Company(String name) {

@@ -55,7 +55,6 @@ public class Employee {
     private Department department;
 
     @ManyToOne
-    @Column(nullable = false)
     private Company company;
 
     public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company) {
