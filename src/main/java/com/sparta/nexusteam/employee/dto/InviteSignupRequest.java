@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class SignupRequest {
+public class InviteSignupRequest {
     @NotBlank(message = "아이디는 빈칸이 될 수 없습니다")
     private String accountId;
 
@@ -27,7 +27,4 @@ public class SignupRequest {
 
     @NotBlank(message = "주소는 빈칸이 될 수 없습니다")
     private String address;
-
-    @NotBlank(message = "회사명은 빈칸이 될 수 없습니다")
-    private String companyName;
 }
