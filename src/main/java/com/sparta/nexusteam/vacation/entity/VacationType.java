@@ -1,15 +1,19 @@
 package com.sparta.nexusteam.vacation.entity;
 
 
+import com.sparta.nexusteam.employee.entity.Company;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Entity
@@ -27,8 +31,13 @@ public class VacationType {
     @Column(nullable = false)
     private int days;
 
-    public VacationType(String name, int days) {
+    @JoinColumn(name="company_id",nullable=false)
+    @ManyToOne
+    private Company company;
+
+    public VacationType(String name, int days, Company company) {
         this.name = name;
         this.days = days;
+        this.company = company;
     }
 }

@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.sparta.nexusteam.config.QueryDslConfig;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
+import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.employee.entity.Position;
 import com.sparta.nexusteam.employee.entity.UserRole;
+import com.sparta.nexusteam.employee.repository.CompanyRepository;
 import com.sparta.nexusteam.employee.repository.EmployeeRepository;
 import com.sparta.nexusteam.vacation.entity.ApprovalStatus;
 import com.sparta.nexusteam.vacation.entity.Vacation;
@@ -22,9 +25,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @DataJpaTest
+@Import({QueryDslConfig.class,})
 public class RepositoryTest {
 
     @Autowired
@@ -32,6 +38,9 @@ public class RepositoryTest {
 
     @Autowired
     private VacationTypeRepository vacationTypeRepository;
+
+    @Autowired
+    private CompanyRepository companyRepository;
 
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -44,66 +53,39 @@ public class RepositoryTest {
         @Transactional
         public void save() {
             //given
-            //employee 생성
-            String accountId = "test";
-            String password = "test12345!";
-            String username = "test";
-            String email = "test@test.com";
-            String phoneNumber = "01012345678";
-            String address = "test";
-            SignupRequest signupRequest = new SignupRequest();
-            signupRequest.setAccountId(accountId);
-            signupRequest.setPassword(password);
-            signupRequest.setUserName(username);
-            signupRequest.setEmail(email);
-            signupRequest.setPhoneNumber(phoneNumber);
-            signupRequest.setAddress(address);
-            Employee employee = new Employee(signupRequest, password, Position.ASSISTANT_MANAGER,
-                    UserRole.USER);
-            Employee savedEmployee = employeeRepository.save(employee);
-            //vacationType 생성
-            VacationType vacationType = new VacationType("연차", 1);
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
-            //vacation 생성
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
+            vacationTypeRepository.save(vacationType);
+            Employee employee = new Employee(new SignupRequest("testId", "test1234!", "testUsername", "test@test.com",
+                            "01012345678", "testAddress", "testCompany"),"test1234!", Position.ASSISTANT_MANAGER, UserRole.USER,company);
+            employeeRepository.save(employee);
             Vacation vacation = new Vacation(LocalDateTime.of(2024, 07, 24, 9, 00),
-                    LocalDateTime.of(2024, 07, 25, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 25, 9, 00), vacationType, employee);
             //when
             Vacation savedVacation = vacationRepository.save(vacation);
+
             //then
             assertNotNull(savedVacation.getId());
             assertEquals(LocalDateTime.of(2024, 07, 24, 9, 00), savedVacation.getStartDate());
             assertEquals(LocalDateTime.of(2024, 07, 25, 9, 00), savedVacation.getEndDate());
-            assertEquals(savedVacationType.getId(), savedVacation.getVacationType().getId());
-            assertEquals(savedEmployee.getId(), savedVacation.getEmployee().getId());
+            assertEquals(savedVacation.getVacationType().getId(), vacationType.getId());
+            assertEquals(savedVacation.getEmployee().getId(), employee.getId());
         }
 
         @Test
         @Transactional
         public void findById() {
             //given
-            //employee 생성
-            String accountId = "test";
-            String password = "test12345!";
-            String username = "test";
-            String email = "test@test.com";
-            String phoneNumber = "01012345678";
-            String address = "test";
-            SignupRequest signupRequest = new SignupRequest();
-            signupRequest.setAccountId(accountId);
-            signupRequest.setPassword(password);
-            signupRequest.setUserName(username);
-            signupRequest.setEmail(email);
-            signupRequest.setPhoneNumber(phoneNumber);
-            signupRequest.setAddress(address);
-            Employee employee = new Employee(signupRequest, password, Position.ASSISTANT_MANAGER,
-                    UserRole.USER);
-            Employee savedEmployee = employeeRepository.save(employee);
-            //vacationType 생성
-            VacationType vacationType = new VacationType("연차", 1);
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
-            //vacation 생성
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
+            vacationTypeRepository.save(vacationType);
+            Employee employee = new Employee(new SignupRequest("testId", "test1234!", "testUsername", "test@test.com",
+                    "01012345678", "testAddress", "testCompany"),"test1234!", Position.ASSISTANT_MANAGER, UserRole.USER,company);
+            employeeRepository.save(employee);
             Vacation vacation = new Vacation(LocalDateTime.of(2024, 07, 24, 9, 00),
-                    LocalDateTime.of(2024, 07, 25, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 25, 9, 00), vacationType, employee);
             Vacation savedVacation = vacationRepository.save(vacation);
             Long vacationId = savedVacation.getId();
             //when
@@ -111,181 +93,124 @@ public class RepositoryTest {
                     .orElseThrow(() -> new IllegalArgumentException("해당 휴가는 없습니다."));
             //then
             assertEquals(vacationId, findVacation.getId());
-            assertEquals(savedVacation.getStartDate(), findVacation.getStartDate());
-            assertEquals(savedVacation.getEndDate(), findVacation.getEndDate());
-            assertEquals(savedVacationType.getId(), findVacation.getVacationType().getId());
-            assertEquals(savedEmployee.getId(), findVacation.getEmployee().getId());
+            assertEquals(vacation.getStartDate(), findVacation.getStartDate());
+            assertEquals(vacation.getEndDate(), findVacation.getEndDate());
+            assertEquals(vacationType.getId(), findVacation.getVacationType().getId());
+            assertEquals(employee.getId(), findVacation.getEmployee().getId());
         }
 
         @Test
         @Transactional
         public void findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc() {
             //given
-            //employee 생성
-            String accountId = "test";
-            String password = "test12345!";
-            String username = "test";
-            String email = "test@test.com";
-            String phoneNumber = "01012345678";
-            String address = "test";
-            SignupRequest signupRequest = new SignupRequest();
-            signupRequest.setAccountId(accountId);
-            signupRequest.setPassword(password);
-            signupRequest.setUserName(username);
-            signupRequest.setEmail(email);
-            signupRequest.setPhoneNumber(phoneNumber);
-            signupRequest.setAddress(address);
-            Employee employee = new Employee(signupRequest, password, Position.ASSISTANT_MANAGER,
-                    UserRole.USER);
-            Employee savedEmployee = employeeRepository.save(employee);
-            //vacationType 생성
-            VacationType vacationType = new VacationType("연차", 1);
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
-            //vacation 생성
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
+            vacationTypeRepository.save(vacationType);
+            Employee employee = new Employee(new SignupRequest("testId", "test1234!", "testUsername", "test@test.com",
+                    "01012345678", "testAddress", "testCompany"),"test1234!", Position.ASSISTANT_MANAGER, UserRole.USER,company);
+            employeeRepository.save(employee);
             Vacation vacation1 = new Vacation(LocalDateTime.of(2024, 07, 22, 9, 00),
-                    LocalDateTime.of(2024, 07, 23, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 23, 9, 00), vacationType, employee);
             Vacation vacation2 = new Vacation(LocalDateTime.of(2024, 07, 23, 9, 00),
-                    LocalDateTime.of(2024, 07, 24, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 24, 9, 00), vacationType, employee);
             Vacation vacation3 = new Vacation(LocalDateTime.of(2024, 07, 24, 9, 00),
-                    LocalDateTime.of(2024, 07, 25, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 25, 9, 00), vacationType, employee);
             Vacation vacation4 = new Vacation(LocalDateTime.of(2024, 07, 25, 9, 00),
-                    LocalDateTime.of(2024, 07, 26, 9, 00), savedVacationType, savedEmployee);
-            Vacation savedVacation1 = vacationRepository.save(vacation1);
-            Vacation savedVacation2 = vacationRepository.save(vacation2);
-            Vacation savedVacation3 = vacationRepository.save(vacation3);
-            Vacation savedVacation4 = vacationRepository.save(vacation4);
+                    LocalDateTime.of(2024, 07, 26, 9, 00), vacationType, employee);
+            vacationRepository.save(vacation1);
+            vacationRepository.save(vacation2);
+            vacationRepository.save(vacation3);
+            vacationRepository.save(vacation4);
 
             //when
             List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(
-                    LocalDateTime.now(), employee.getId());
+                    LocalDateTime.of(2024, 07, 25, 10, 00), employee.getId());
             //then
-            assertTrue(vacationList.size() == 3);
-            assertEquals(vacationList.get(0).getId(), savedVacation3.getId());
-            assertEquals(vacationList.get(1).getId(), savedVacation2.getId());
-            assertEquals(vacationList.get(2).getId(), savedVacation1.getId());
+            assertEquals(vacationList.size(), 3);
+            assertEquals(vacationList.get(0).getId(), vacation3.getId());
+            assertEquals(vacationList.get(1).getId(), vacation2.getId());
+            assertEquals(vacationList.get(2).getId(), vacation1.getId());
         }
 
         @Test
         @Transactional
         public void findByEndDateAfterAndEmployeeIdOrderByStartDateAsc() {
             //given
-            //employee 생성
-            String accountId = "test";
-            String password = "test12345!";
-            String username = "test";
-            String email = "test@test.com";
-            String phoneNumber = "01012345678";
-            String address = "test";
-            SignupRequest signupRequest = new SignupRequest();
-            signupRequest.setAccountId(accountId);
-            signupRequest.setPassword(password);
-            signupRequest.setUserName(username);
-            signupRequest.setEmail(email);
-            signupRequest.setPhoneNumber(phoneNumber);
-            signupRequest.setAddress(address);
-            Employee employee = new Employee(signupRequest, password, Position.ASSISTANT_MANAGER,
-                    UserRole.USER);
-            Employee savedEmployee = employeeRepository.save(employee);
-            //vacationType 생성
-            VacationType vacationType = new VacationType("연차", 1);
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
+            vacationTypeRepository.save(vacationType);
+            Employee employee = new Employee(new SignupRequest("testId", "test1234!", "testUsername", "test@test.com",
+                    "01012345678", "testAddress", "testCompany"),"test1234!", Position.ASSISTANT_MANAGER, UserRole.USER,company);
+            employeeRepository.save(employee);
             //vacation 생성
             Vacation vacation1 = new Vacation(LocalDateTime.of(2024, 07, 24, 9, 00),
-                    LocalDateTime.of(2024, 07, 25, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 25, 9, 00), vacationType, employee);
             Vacation vacation2 = new Vacation(LocalDateTime.of(2024, 07, 25, 9, 00),
-                    LocalDateTime.of(2024, 07, 26, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 26, 9, 00), vacationType, employee);
             Vacation vacation3 = new Vacation(LocalDateTime.of(2024, 07, 26, 9, 00),
-                    LocalDateTime.of(2024, 07, 27, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 27, 9, 00), vacationType, employee);
             Vacation vacation4 = new Vacation(LocalDateTime.of(2024, 07, 27, 9, 00),
-                    LocalDateTime.of(2024, 07, 28, 9, 00), savedVacationType, savedEmployee);
-            Vacation savedVacation1 = vacationRepository.save(vacation1);
-            Vacation savedVacation2 = vacationRepository.save(vacation2);
-            Vacation savedVacation3 = vacationRepository.save(vacation3);
-            Vacation savedVacation4 = vacationRepository.save(vacation4);
+                    LocalDateTime.of(2024, 07, 28, 9, 00), vacationType, employee);
+            vacationRepository.save(vacation1);
+            vacationRepository.save(vacation2);
+            vacationRepository.save(vacation3);
+            vacationRepository.save(vacation4);
 
             //when
             List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdOrderByStartDateAsc(
-                    LocalDateTime.now(), employee.getId());
+                    LocalDateTime.of(2024, 07, 25, 10, 00), employee.getId());
             //then
             assertTrue(vacationList.size() == 3);
-            assertEquals(vacationList.get(0).getId(), savedVacation2.getId());
-            assertEquals(vacationList.get(1).getId(), savedVacation3.getId());
-            assertEquals(vacationList.get(2).getId(), savedVacation4.getId());
+            assertEquals(vacationList.get(0).getId(), vacation2.getId());
+            assertEquals(vacationList.get(1).getId(), vacation3.getId());
+            assertEquals(vacationList.get(2).getId(), vacation4.getId());
         }
 
         @Test
         @Transactional
         public void findByApprovalStatusOrderByStartDateAsc() {
             //given
-            //employee 생성
-            String accountId = "test";
-            String password = "test12345!";
-            String username = "test";
-            String email = "test@test.com";
-            String phoneNumber = "01012345678";
-            String address = "test";
-            SignupRequest signupRequest = new SignupRequest();
-            signupRequest.setAccountId(accountId);
-            signupRequest.setPassword(password);
-            signupRequest.setUserName(username);
-            signupRequest.setEmail(email);
-            signupRequest.setPhoneNumber(phoneNumber);
-            signupRequest.setAddress(address);
-            Employee employee = new Employee(signupRequest, password, Position.ASSISTANT_MANAGER,
-                    UserRole.USER);
-            Employee savedEmployee = employeeRepository.save(employee);
-            //vacationType 생성
-            VacationType vacationType = new VacationType("연차", 1);
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
-            //vacation 생성
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
+            vacationTypeRepository.save(vacationType);
+            Employee employee = new Employee(new SignupRequest("testId", "test1234!", "testUsername", "test@test.com",
+                    "01012345678", "testAddress", "testCompany"),"test1234!", Position.ASSISTANT_MANAGER, UserRole.USER,company);
+            employeeRepository.save(employee);
             Vacation vacation1 = new Vacation(LocalDateTime.of(2024, 07, 24, 9, 00),
-                    LocalDateTime.of(2024, 07, 25, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 25, 9, 00), vacationType, employee);
             Vacation vacation2 = new Vacation(LocalDateTime.of(2024, 07, 25, 9, 00),
-                    LocalDateTime.of(2024, 07, 26, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 26, 9, 00), vacationType, employee);
             Vacation vacation3 = new Vacation(LocalDateTime.of(2024, 07, 26, 9, 00),
-                    LocalDateTime.of(2024, 07, 27, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 27, 9, 00), vacationType, employee);
             vacation3.updateApprovalStatus(ApprovalStatus.APPROVED);
-            Vacation savedVacation1 = vacationRepository.save(vacation1);
-            Vacation savedVacation2 = vacationRepository.save(vacation2);
-            Vacation savedVacation3 = vacationRepository.save(vacation3);
-
+            vacationRepository.save(vacation1);
+            vacationRepository.save(vacation2);
+            vacationRepository.save(vacation3);
             //when
-            List<Vacation> vacationList = vacationRepository.findByApprovalStatusOrderByStartDateAsc(
-                    ApprovalStatus.PENDING);
+            List<Vacation> vacationList = vacationRepository.findByCompanyIdAndApprovalStatus(company.getId(),ApprovalStatus.PENDING);
 
             //then
             assertTrue(vacationList.size() == 2);
-            assertEquals(vacationList.get(0).getId(), savedVacation1.getId());
-            assertEquals(vacationList.get(1).getId(), savedVacation2.getId());
+            assertEquals(vacationList.get(0).getId(), vacation1.getId());
+            assertEquals(vacationList.get(1).getId(), vacation2.getId());
         }
 
         @Test
         @Transactional
         public void delete() {
             //given
-            //employee 생성
-            String accountId = "test";
-            String password = "test12345!";
-            String username = "test";
-            String email = "test@test.com";
-            String phoneNumber = "01012345678";
-            String address = "test";
-            SignupRequest signupRequest = new SignupRequest();
-            signupRequest.setAccountId(accountId);
-            signupRequest.setPassword(password);
-            signupRequest.setUserName(username);
-            signupRequest.setEmail(email);
-            signupRequest.setPhoneNumber(phoneNumber);
-            signupRequest.setAddress(address);
-            Employee employee = new Employee(signupRequest, password, Position.ASSISTANT_MANAGER,
-                    UserRole.USER);
-            Employee savedEmployee = employeeRepository.save(employee);
-            //vacationType 생성
-            VacationType vacationType = new VacationType("연차", 1);
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
-            //vacation 생성
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
+            vacationTypeRepository.save(vacationType);
+            Employee employee = new Employee(new SignupRequest("testId", "test1234!", "testUsername", "test@test.com",
+                    "01012345678", "testAddress", "testCompany"),"test1234!", Position.ASSISTANT_MANAGER, UserRole.USER,company);
+            employeeRepository.save(employee);
             Vacation vacation1 = new Vacation(LocalDateTime.of(2024, 07, 24, 9, 00),
-                    LocalDateTime.of(2024, 07, 25, 9, 00), savedVacationType, savedEmployee);
+                    LocalDateTime.of(2024, 07, 25, 9, 00), vacationType, employee);
             Vacation savedVacation1 = vacationRepository.save(vacation1);
 
             //when
@@ -306,28 +231,32 @@ public class RepositoryTest {
         @Transactional
         public void save() {
             //given
-            VacationType vacationType = new VacationType("연차", 1);
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType = new VacationType("연차", 1, company);
             //when
-            VacationType savedVacationType = vacationTypeRepository.save(vacationType);
+            vacationTypeRepository.save(vacationType);
             //then
-            assertNotNull(savedVacationType.getId());
-            assertEquals(vacationType.getName(), savedVacationType.getName());
-            assertEquals(vacationType.getDays(), savedVacationType.getDays());
+            assertNotNull(vacationType.getId());
+            assertEquals(vacationType.getName(), vacationType.getName());
+            assertEquals(vacationType.getDays(), vacationType.getDays());
         }
 
         @Test
         @Transactional
         public void findAll() {
             //given
-            VacationType vacationType1 = new VacationType("연차", 1);
-            VacationType vacationType2 = new VacationType("연차", 1);
-            VacationType vacationType3 = new VacationType("연차", 1);
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType1 = new VacationType("연차", 1,company);
+            VacationType vacationType2 = new VacationType("연차", 1,company);
+            VacationType vacationType3 = new VacationType("연차", 1,company);
             vacationTypeRepository.save(vacationType1);
             vacationTypeRepository.save(vacationType2);
             vacationTypeRepository.save(vacationType3);
 
             //when
-            List<VacationType> vacationTypes = vacationTypeRepository.findAll();
+            List<VacationType> vacationTypes = vacationTypeRepository.findByCompanyId(company.getId());
 
             //then
             assertEquals(3, vacationTypes.size());
@@ -342,17 +271,19 @@ public class RepositoryTest {
         @Transactional
         public void findById() {
             //given
-            VacationType vacationType1 = new VacationType("연차", 1);
-            VacationType savedVacationType1 = vacationTypeRepository.save(vacationType1);
+            Company company = new Company("TestCompany");
+            companyRepository.save(company);
+            VacationType vacationType1 = new VacationType("연차", 1,company);
+            vacationTypeRepository.save(vacationType1);
             //when
             VacationType findVacationType1 = vacationTypeRepository.findById(
-                            savedVacationType1.getId())
+                            vacationType1.getId())
                     .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가종류를 찾을 수 없습니다."));
             //then
             assertNotNull(findVacationType1);
-            assertEquals(savedVacationType1.getId(), findVacationType1.getId());
-            assertEquals(savedVacationType1.getName(), findVacationType1.getName());
-            assertEquals(savedVacationType1.getDays(), findVacationType1.getDays());
+            assertEquals(vacationType1.getId(), findVacationType1.getId());
+            assertEquals(vacationType1.getName(), findVacationType1.getName());
+            assertEquals(vacationType1.getDays(), findVacationType1.getDays());
         }
     }
 

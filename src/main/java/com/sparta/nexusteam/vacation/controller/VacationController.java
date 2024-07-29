@@ -40,14 +40,14 @@ public class VacationController {
     /**
      * 휴가 종류 등록
      */
-    @PostMapping("/vacation-type")
-    public ResponseEntity<CommonResponse> createVacationType(
+    @PostMapping("/company/{companyId}/vacation-type")
+    public ResponseEntity<CommonResponse> createVacationType(@PathVariable Long companyId,
             @Valid @RequestBody PostVacationTypeRequest requestDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return getFieldErrorResponseEntity(bindingResult, "휴가 종류 등록 실패");
         }
         try {
-            VacationTypeResponse responseDto = vacationServiceImpl.createVacationType(requestDto);
+            VacationTypeResponse responseDto = vacationServiceImpl.createVacationType(requestDto,companyId);
             return getResponseEntity(responseDto, "휴가 종류 등록 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -120,10 +120,10 @@ public class VacationController {
     /**
      * 승인전 휴가 리스트 조회
      */
-    @GetMapping("/vacation/approval")
-    public ResponseEntity<CommonResponse> getPendingVacations() {
+    @GetMapping("/company/{companyId}/vacation/approval")
+    public ResponseEntity<CommonResponse> getPendingVacations(@PathVariable Long companyId) {
         try {
-            List<VacationResponse> responseDtoList = vacationServiceImpl.getPendingVacations();
+            List<VacationResponse> responseDtoList = vacationServiceImpl.getPendingVacations(companyId);
             return getResponseEntity(responseDtoList, "승인전 휴가 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -133,10 +133,10 @@ public class VacationController {
     /**
      * 휴가 종류 조회
      */
-    @GetMapping("/vacation-type")
-    public ResponseEntity<CommonResponse> getVacationTypes() {
+    @GetMapping("/company/{companyId}/vacation-type")
+    public ResponseEntity<CommonResponse> getVacationTypes(@PathVariable Long companyId) {
         try {
-            List<VacationTypeResponse> responseDtoList = vacationServiceImpl.getVacationTypes();
+            List<VacationTypeResponse> responseDtoList = vacationServiceImpl.getVacationTypes(companyId);
             return getResponseEntity(responseDtoList, "휴가 종류 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -158,7 +158,7 @@ public class VacationController {
             VacationResponse responseDto = vacationServiceImpl.updateVacationApprovalStatus(
                     vacationId,
                     requestDto);
-            return getResponseEntity(responseDto, "휴가 등록 성공");
+            return getResponseEntity(responseDto, "휴가 승인/거절 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
