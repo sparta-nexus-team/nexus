@@ -36,7 +36,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employeeRepository.existsByAccountId(request.getAccountId())) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
-        if(companyRepository.existsByName(request.getCompanyName())) {
+                if(companyRepository.existsByName(request.getCompanyName())) {
             throw new IllegalArgumentException("이미 존재하는 회사입니다.");
         }
 

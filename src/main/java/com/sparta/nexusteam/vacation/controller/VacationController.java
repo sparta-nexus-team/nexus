@@ -6,6 +6,7 @@ import static com.sparta.nexusteam.base.ControllerUtil.getFieldErrorResponseEnti
 import static com.sparta.nexusteam.base.ControllerUtil.getResponseEntity;
 
 import com.sparta.nexusteam.base.CommonResponse;
+import com.sparta.nexusteam.security.UserDetailsImpl;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
@@ -57,7 +58,7 @@ public class VacationController {
     @PostMapping("/vacation-type/{vacationTypeId}/vacation")
     public ResponseEntity<CommonResponse> createVacation(@PathVariable Long vacationTypeId,
             @Valid @RequestBody PostVacationRequest requestDto,
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return getFieldErrorResponseEntity(bindingResult, "휴가 등록 실패");
@@ -76,10 +77,10 @@ public class VacationController {
      */
     @GetMapping("/vacation/before")
     public ResponseEntity<CommonResponse> getVacationsBeforeUse(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
             List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsBeforeUse(
-                    userDetails.getEmployee);
+                    userDetails.getEmployee());
             return getResponseEntity(responseDtoList, "휴가 사용전 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -91,10 +92,10 @@ public class VacationController {
      */
     @GetMapping("/vacation/after")
     public ResponseEntity<CommonResponse> getVacationsAfterUse(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
             List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsAfterUse(
-                    userDetails.getEmployee);
+                    userDetails.getEmployee());
             return getResponseEntity(responseDtoList, "휴가 사용후 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
