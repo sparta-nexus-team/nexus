@@ -1,4 +1,4 @@
 package com.sparta.nexusteam.work.service;
 
-public class WorkService {
+public interface WorkService {
 }

@@ -1,6 +1,8 @@
 package com.sparta.nexusteam.vacation.service;
 
+import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
+import com.sparta.nexusteam.employee.repository.CompanyRepository;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
@@ -14,19 +16,25 @@ import com.sparta.nexusteam.vacation.repository.VacationTypeRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VacationServiceImpl implements VacationService {
 
+    private final CompanyRepository companyRepository;
     private final VacationRepository vacationRepository;
     private final VacationTypeRepository vacationTypeRepository;
 
     @Override
-    public VacationTypeResponse createVacationType(PostVacationTypeRequest requestDto) {
-        VacationType vacationType = new VacationType(requestDto.getName(), requestDto.getDays());
+    public VacationTypeResponse createVacationType(PostVacationTypeRequest requestDto,
+            Long companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회사가 없습니다"));
+        VacationType vacationType = new VacationType(requestDto.getName(), requestDto.getDays(), company);
         vacationType = vacationTypeRepository.save(vacationType);
         return new VacationTypeResponse(vacationType);
     }
@@ -35,7 +43,7 @@ public class VacationServiceImpl implements VacationService {
     public VacationResponse createVacation(Long vacationTypeId, PostVacationRequest requestDto,
             Employee employee) {
         VacationType vacationType = vacationTypeRepository.findById(vacationTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 휴가 종류가 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가 종류가 없습니다."));
         Vacation vacation = new Vacation(requestDto.getStartDate(), requestDto.getEndDate(),
                 vacationType, employee);
         vacation = vacationRepository.save(vacation);
@@ -44,14 +52,14 @@ public class VacationServiceImpl implements VacationService {
 
     @Override
     public List<VacationResponse> getVacationsBeforeUse(Employee employee) {
-        List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(
+        List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdOrderByStartDateAsc(
                 LocalDateTime.now(), employee.getId());
         return vacationList.stream().map(VacationResponse::new).toList();
     }
 
     @Override
     public List<VacationResponse> getVacationsAfterUse(Employee employee) {
-        List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdOrderByStartDateDesc(
+        List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(
                 LocalDateTime.now(), employee.getId());
         return vacationList.stream().map(VacationResponse::new).toList();
     }
@@ -59,20 +67,19 @@ public class VacationServiceImpl implements VacationService {
     @Override
     public VacationResponse getVacation(Long vacationId) {
         Vacation vacation = vacationRepository.findById(vacationId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 휴가는 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가는 없습니다."));
         return new VacationResponse(vacation);
     }
 
     @Override
-    public List<VacationResponse> getPendingVacations() {
-        List<Vacation> vacationList = vacationRepository.findByApprovalStatusOrderByStartDateAsc(
-                ApprovalStatus.PENDING);
+    public List<VacationResponse> getPendingVacations(Long companyId) {
+        List<Vacation> vacationList = vacationRepository.findByCompanyIdAndApprovalStatus(companyId, ApprovalStatus.PENDING);
         return vacationList.stream().map(VacationResponse::new).toList();
     }
 
     @Override
-    public List<VacationTypeResponse> getVacationTypes() {
-        List<VacationType> vacationTypes = vacationTypeRepository.findAll();
+    public List<VacationTypeResponse> getVacationTypes(Long companyId) {
+        List<VacationType> vacationTypes = vacationTypeRepository.findByCompanyId(companyId);
         return vacationTypes.stream().map(VacationTypeResponse::new).toList();
     }
 
@@ -81,7 +88,7 @@ public class VacationServiceImpl implements VacationService {
     public VacationResponse updateVacationApprovalStatus(Long vacationId,
             PatchVacationApprovalRequest requestDto) {
         Vacation vacation = vacationRepository.findById(vacationId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 휴가는 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가는 없습니다."));
         vacation.updateApprovalStatus(requestDto.getApprovalStatus());
         return new VacationResponse(vacation);
     }
@@ -90,7 +97,7 @@ public class VacationServiceImpl implements VacationService {
     @Transactional
     public void deleteVacation(Long vacationId) {
         Vacation vacation = vacationRepository.findById(vacationId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 휴가는 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가는 없습니다."));
         vacationRepository.delete(vacation);
     }
 }
