@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sparta.nexusteam.vacation.entity.ApprovalStatus;
 import com.sparta.nexusteam.vacation.entity.Vacation;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class VacationResponse {
     private Long id;
     private String vacationTypeName;

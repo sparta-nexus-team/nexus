@@ -3,9 +3,11 @@ package com.sparta.nexusteam.employee.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class SignupRequest {
     @NotBlank(message = "아이디는 빈칸이 될 수 없습니다")
     private String accountId;

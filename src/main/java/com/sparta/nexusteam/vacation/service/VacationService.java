@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface VacationService {
 
-    VacationTypeResponse createVacationType(PostVacationTypeRequest requestDto);
+    VacationTypeResponse createVacationType(PostVacationTypeRequest requestDto,Long companyId);
 
     VacationResponse createVacation(Long vacationTypeId, PostVacationRequest requestDto, Employee employee);
 
@@ -20,9 +20,9 @@ public interface VacationService {
 
     VacationResponse getVacation(Long vacationId);
 
-    List<VacationResponse> getPendingVacations();
+    List<VacationResponse> getPendingVacations(Long companyId);
 
-    List<VacationTypeResponse> getVacationTypes();
+    List<VacationTypeResponse> getVacationTypes(Long companyId);
 
     VacationResponse updateVacationApprovalStatus(Long vacationId, PatchVacationApprovalRequest requestDto);
 
