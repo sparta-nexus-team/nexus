@@ -10,6 +10,10 @@ import org.springframework.data.domain.Pageable;
 public interface WorkService {
     Long saveWork(Employee employee,WorkRequest workRequest);
 
+    Page<WorkResponse> getDayWork(Employee employee,Pageable pageable);
+
     Page<WorkResponse> getWeekWork(Employee employee, Pageable pageable);
     Page<WorkResponse> getMemberDayWork(Long company_id,Pageable pageable);
+    Page<WorkResponse> getMemberWeekWork(Long company_id,Pageable pageable);
+    Page<WorkResponse> getMemberMonthWork(Long company_id,Pageable pageable);
 }

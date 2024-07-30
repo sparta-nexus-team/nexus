@@ -1,12 +1,12 @@
 package com.sparta.nexusteam.work.entity;
 
-public enum WorkStatus {
+public enum SalaryType {
     VACATION("휴가"),
     CUSTOMIZED_WORK("맞춤근무"),
     OVER_WORK("맞춤근무");
 
     private final String workType;
-    WorkStatus(String workType){
+    SalaryType(String workType){
         this.workType = workType;
     }
 }

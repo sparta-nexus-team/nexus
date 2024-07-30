@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -27,7 +26,7 @@ public class Work {
     private Date work_date;
 
     @Enumerated(EnumType.STRING)
-    private WorkStatus work_status;
+    private SalaryType salaryType;
 
     private String message;
 
@@ -35,9 +34,9 @@ public class Work {
     private AllowedStatus allowed_status = AllowedStatus.WORK_NOT_ALLOWED;
 
 
-    public Work(Employee employee,WorkStatus work_status, String message,Duration work_time) {
+    public Work(Employee employee, SalaryType salaryType, String message, Duration work_time) {
         this.employee = employee;
-        this.work_status = work_status;
+        this.salaryType = salaryType;
         this.message = message;
         this.work_time = work_time;
     }

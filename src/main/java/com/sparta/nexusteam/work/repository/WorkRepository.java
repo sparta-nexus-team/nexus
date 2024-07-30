@@ -14,6 +14,13 @@ import java.util.Date;
 
 @Repository
 public interface WorkRepository extends JpaRepository<Work,Long> {
+
+    @Query("select w from Work w WHERE w.employee.company.id = :employee_id and w.work_date = :today")
+    Page<Work> findWorkByToday(
+            Pageable pageable,
+            @Param("employee_id") Long employeeId,
+            @Param("today") Date today
+    );
     @Query("select w from Work w WHERE w.employee.id = :employee_id and w.work_date between :startDate and :endDate")
     Page<Work> findWorkByDateRange(
             Pageable pageable,

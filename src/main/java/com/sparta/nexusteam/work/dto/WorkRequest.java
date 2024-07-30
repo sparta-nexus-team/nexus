@@ -1,16 +1,15 @@
 package com.sparta.nexusteam.work.dto;
 
-import com.sparta.nexusteam.work.entity.WorkStatus;
+import com.sparta.nexusteam.work.entity.SalaryType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 @Getter
 public class WorkRequest {
     @NotNull(message = "근무 상태를 입력하세요!")
-    private WorkStatus work_status;
+    private SalaryType work_status;
     @NotNull(message = "근무 시간을 입력하세요!")
     private Duration work_time;
     @NotNull(message = "근무 요청 메시지를 입력하세요!")

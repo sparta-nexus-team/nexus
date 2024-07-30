@@ -2,8 +2,7 @@ package com.sparta.nexusteam.work.dto;
 
 import com.sparta.nexusteam.work.entity.AllowedStatus;
 import com.sparta.nexusteam.work.entity.Work;
-import com.sparta.nexusteam.work.entity.WorkStatus;
-import jakarta.persistence.*;
+import com.sparta.nexusteam.work.entity.SalaryType;
 import lombok.Getter;
 
 import java.time.Duration;
@@ -14,7 +13,7 @@ public class WorkResponse {
 
     private Date work_date;
 
-    private WorkStatus work_status;
+    private SalaryType work_status;
 
     private String message;
 
