@@ -9,5 +9,5 @@ public interface DepartmentService {
     List<Department> getAllDepartments(Employee employee);
     Department createDepartment(Department department, Employee employee);
     Department updateDepartment(Long id, Department departmentDetails, Employee employee);
-    Long deleteDepartment(Long id);
+    Long deleteDepartment(Long id, Employee employee);
 }

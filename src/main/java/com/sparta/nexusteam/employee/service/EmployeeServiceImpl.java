@@ -7,8 +7,13 @@ import com.sparta.nexusteam.employee.repository.EmployeeRepository;
 import com.sparta.nexusteam.employee.repository.InvitationRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +69,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public String inviteEmployee(String email, Employee employee) {
+        if(!UserRole.MANAGER.equals(employee.getRole())){
+            throw new AccessDeniedException("권한이 없습니다");
+        }
+
         String token = UUID.randomUUID().toString();
         Invitation invitation = new Invitation(email, token, new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000), employee.getCompany().getName());
 
@@ -89,6 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Cacheable(value = "allEmployees", key = "#employeeDetail.company.id")
     public List<EmployeeResponse> getAllEmployees(Employee employeeDetail) {
         List<Employee> employees = employeeRepository.findAllByCompany(employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
@@ -102,6 +112,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Cacheable(value = "allEmployeesByDepartment", key = "#departmentName + '_' + #employeeDetail.company.id")
     public List<EmployeeResponse> getEmployeesByDepartment(String departmentName, Employee employeeDetail) {
         List<Employee> employees = employeeRepository.findByDepartmentNameAndCompany(departmentName, employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
@@ -115,6 +126,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Cacheable(value = "allEmployeesByUserName", key = "#userName + '_' + #employeeDetail.company.id")
     public List<EmployeeResponse> getEmployeesByUserName(String userName, Employee employeeDetail) {
         List<Employee> employees = employeeRepository.findByUserNameAndCompany(userName, employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
@@ -128,6 +140,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Cacheable(value = "employee", key = "#id")
     public EmployeeResponse getEmployeeById(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
@@ -136,9 +149,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResponse updateEmployee(Long id, EmployeeRequest request) {
+    @Caching(
+            put = @CachePut(value = "employee", key = "#id"),
+            evict = {
+                    @CacheEvict(value = "allEmployees", allEntries = true),
+                    @CacheEvict(value = "allEmployeesByDepartment", allEntries = true),
+                    @CacheEvict(value = "allEmployeesByUserName", allEntries = true)
+            }
+    )
+    public EmployeeResponse updateEmployee(Long id, EmployeeRequest request, Employee employeeDetail) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
+
+        if(!UserRole.MANAGER.equals(employeeDetail.getRole())){
+            throw new AccessDeniedException("권한이 없습니다");
+        }
 
         employee.updateProfile(request);
 
@@ -148,9 +173,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Long deleteEmployee(Long id) {
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "employee", key = "#id"),
+                    @CacheEvict(value = "allEmployees", allEntries = true),
+                    @CacheEvict(value = "allEmployeesByDepartment", allEntries = true),
+                    @CacheEvict(value = "allEmployeesByUserName", allEntries = true)
+            }
+    )
+    public Long deleteEmployee(Long id, Employee employeeDetail) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
+
+        if(!UserRole.MANAGER.equals(employeeDetail.getRole())){
+            throw new AccessDeniedException("권한이 없습니다");
+        }
 
         employeeRepository.delete(employee);
 

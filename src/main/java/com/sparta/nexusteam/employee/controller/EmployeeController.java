@@ -62,7 +62,7 @@ public class EmployeeController {
     }
 
     @PostMapping("/employee/invite")
-    public ResponseEntity<CommonResponse> inviteEmployee( //노동자 초대
+    public ResponseEntity<CommonResponse> inviteEmployee( //사원 초대
             @RequestParam("email") String email,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
@@ -160,13 +160,14 @@ public class EmployeeController {
     public ResponseEntity<CommonResponse> updateEmployee( // 사원 정보 수정
             @PathVariable Long id,
             @Valid @RequestBody EmployeeRequest employeeDetails,
-            BindingResult bindingResult
+            BindingResult bindingResult,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         if (bindingResult.hasErrors()) {
             return getFieldErrorResponseEntity(bindingResult, "사원 정보 수정 실패");
         }
         try{
-            EmployeeResponse response = employeeServiceImpl.updateEmployee(id, employeeDetails);
+            EmployeeResponse response = employeeServiceImpl.updateEmployee(id, employeeDetails, userDetails.getEmployee());
             return getResponseEntity(response, "사원 정보 수정 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -175,10 +176,11 @@ public class EmployeeController {
 
     @DeleteMapping("/employee/{id}")
     public ResponseEntity<CommonResponse> deleteEmployee( // 사원 삭제
-            @PathVariable Long id
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try{
-            Long response = employeeServiceImpl.deleteEmployee(id);
+            Long response = employeeServiceImpl.deleteEmployee(id, userDetails.getEmployee());
             return getResponseEntity(response, "사원 삭제 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -235,10 +237,11 @@ public class EmployeeController {
 
     @DeleteMapping("/employee/departments/{id}")
     public ResponseEntity<CommonResponse> deleteDepartment(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try{
-            Long response = departmentServiceImpl.deleteDepartment(id);
+            Long response = departmentServiceImpl.deleteDepartment(id, userDetails.getEmployee());
             return getResponseEntity(response, "부서 삭제 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
