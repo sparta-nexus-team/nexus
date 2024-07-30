@@ -17,6 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 @RestController
 @RequestMapping("/work")
 public class WorkController {
@@ -42,6 +44,24 @@ public class WorkController {
             return ControllerUtil.getBadRequestResponseEntity(e);
         }
 
+    }
+
+    @PutMapping("/{date}")
+    public ResponseEntity<CommonResponse> updateWork(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Date date,
+            @Valid @RequestBody WorkRequest request,
+            BindingResult bindingResult
+    ){
+        if(bindingResult.hasErrors()){
+            return ControllerUtil.getFieldErrorResponseEntity(bindingResult,"근무 수정 실패");
+        }
+        try{
+            Long id = workService.updateWork(userDetails.getEmployee(),date,request);
+            return ControllerUtil.getResponseEntity(id,"근무 수정 완료");
+        }catch(Exception e){
+            return ControllerUtil.getBadRequestResponseEntity(e);
+        }
     }
 
     @GetMapping("/today")

@@ -1,6 +1,7 @@
 package com.sparta.nexusteam.work.entity;
 
 import com.sparta.nexusteam.employee.entity.Employee;
+import com.sparta.nexusteam.work.dto.WorkRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,11 @@ public class Work {
         this.salaryType = salaryType;
         this.message = message;
         this.work_time = work_time;
+    }
+    public void update(WorkRequest request){
+        this.salaryType = request.getSalary_type();
+        this.message = request.getMessage();
+        this.work_time = request.getWork_time();
     }
     @PrePersist
     protected void onCreate(){

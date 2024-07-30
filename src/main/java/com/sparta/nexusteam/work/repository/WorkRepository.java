@@ -14,6 +14,7 @@ import java.util.Date;
 
 @Repository
 public interface WorkRepository extends JpaRepository<Work,Long> {
+    Work findByEmployeeAndWork_date(Employee employee,Date date);
 
     @Query("select w from Work w WHERE w.employee.company.id = :employee_id and w.work_date = :today")
     Page<Work> findWorkByToday(

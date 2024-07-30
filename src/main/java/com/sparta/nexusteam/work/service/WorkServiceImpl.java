@@ -28,7 +28,7 @@ public class WorkServiceImpl implements WorkService {
     @Override
     @Transactional
     public Long saveWork(Employee employee,WorkRequest workRequest){
-        SalaryType salaryType = workRequest.getWork_status();
+        SalaryType salaryType = workRequest.getSalary_type();
         Duration work_time = workRequest.getWork_time();
         String message = workRequest.getMessage();
         Work work = new Work(employee,salaryType,message,work_time);
@@ -36,6 +36,13 @@ public class WorkServiceImpl implements WorkService {
         return work.getId();
     }
 
+    //근무 수정
+    @Override
+    public Long updateWork(Employee employee,Date date ,WorkRequest workRequest) {
+        Work work = workRepository.findByEmployeeAndWork_date(employee,date);
+        work.update(workRequest);
+        return work.getId();
+    }
     //회원 근무 당일 조회
 
     @Override
