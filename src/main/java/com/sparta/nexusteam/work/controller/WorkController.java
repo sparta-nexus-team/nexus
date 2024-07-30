@@ -44,6 +44,22 @@ public class WorkController {
 
     }
 
+    @GetMapping("/today")
+    public ResponseEntity<CommonResponse> getDayWork(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "work_date") String sortBy
+    ){
+        try{
+            Pageable pageable = PageRequest.of(page,size, Sort.by(sortBy).descending());
+            Page<WorkResponse> pages = workService.getDayWork(userDetails.getEmployee(),pageable);
+            return ControllerUtil.getResponseEntity(pages,"근무 당일 조회 성공");
+        }catch (Exception e){
+            return ControllerUtil.getBadRequestResponseEntity(e);
+        }
+    }
+
     @GetMapping("/week")
     public ResponseEntity<CommonResponse> getWeekWork(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -55,6 +71,23 @@ public class WorkController {
         try{
             Pageable pageable = PageRequest.of(page,size, Sort.by(sortBy).descending());
             Page<WorkResponse> pages = workService.getWeekWork(userDetails.getEmployee(),pageable);
+            return ControllerUtil.getResponseEntity(pages,"근무 주간 조회 성공");
+        }catch (Exception e){
+            return ControllerUtil.getBadRequestResponseEntity(e);
+        }
+    }
+
+    @GetMapping("/month")
+    public ResponseEntity<CommonResponse> getMonthWork(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "work_date") String sortBy
+    ){
+
+        try{
+            Pageable pageable = PageRequest.of(page,size, Sort.by(sortBy).descending());
+            Page<WorkResponse> pages = workService.getMonthWork(userDetails.getEmployee(),pageable);
             return ControllerUtil.getResponseEntity(pages,"근무 주간 조회 성공");
         }catch (Exception e){
             return ControllerUtil.getBadRequestResponseEntity(e);
