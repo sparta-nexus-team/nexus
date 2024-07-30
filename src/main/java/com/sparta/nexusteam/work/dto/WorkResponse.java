@@ -21,7 +21,7 @@ public class WorkResponse {
 
     public WorkResponse(Work work) {
         this.work_time = work.getWork_time();
-        this.work_date = work.getWork_date();
+        this.work_date = work.getWorkDate();
         this.salary_type = work.getSalaryType();
         this.message = work.getMessage();
         this.allowed_status = work.getAllowed_status();

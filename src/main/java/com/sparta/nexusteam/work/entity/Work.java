@@ -24,7 +24,7 @@ public class Work {
 
     @Temporal(TemporalType.DATE)
     @Column(unique = true)
-    private Date work_date;
+    private Date workDate;
 
     @Enumerated(EnumType.STRING)
     private SalaryType salaryType;
@@ -48,6 +48,6 @@ public class Work {
     }
     @PrePersist
     protected void onCreate(){
-        this.work_date = new Date();
+        this.workDate = new Date();
     }
 }

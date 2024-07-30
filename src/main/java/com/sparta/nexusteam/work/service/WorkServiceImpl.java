@@ -39,14 +39,14 @@ public class WorkServiceImpl implements WorkService {
     //근무 수근
     @Override
     public Long updateWork(Employee employee,Date date ,WorkRequest workRequest) {
-        Work work = workRepository.findByEmployeeAndWork_date(employee,date);
+        Work work = workRepository.findByEmployeeAndWorkDate(employee,date);
         work.update(workRequest);
         return work.getId();
     }
     //근무 삭제
     @Override
     public String deleteWork(Employee employee, Date date) {
-        Work work =workRepository.findByEmployeeAndWork_date(employee,date);
+        Work work =workRepository.findByEmployeeAndWorkDate(employee,date);
         workRepository.delete(work);
         return "삭제 완료";
     }
