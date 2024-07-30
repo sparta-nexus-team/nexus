@@ -11,7 +11,7 @@ import java.util.Date;
 public class WorkResponse {
     private Duration work_time;
 
-    private Date work_date;
+    private Date workDate;
 
     private SalaryType salary_type;
 
@@ -21,7 +21,7 @@ public class WorkResponse {
 
     public WorkResponse(Work work) {
         this.work_time = work.getWork_time();
-        this.work_date = work.getWork_date();
+        this.workDate = work.getWorkDate();
         this.salary_type = work.getSalaryType();
         this.message = work.getMessage();
         this.allowed_status = work.getAllowed_status();
