@@ -36,15 +36,22 @@ public class WorkServiceImpl implements WorkService {
         return work.getId();
     }
 
-    //근무 수정
+    //근무 수근
     @Override
     public Long updateWork(Employee employee,Date date ,WorkRequest workRequest) {
         Work work = workRepository.findByEmployeeAndWork_date(employee,date);
         work.update(workRequest);
         return work.getId();
     }
-    //회원 근무 당일 조회
+    //근무 삭제
+    @Override
+    public String deleteWork(Employee employee, Date date) {
+        Work work =workRepository.findByEmployeeAndWork_date(employee,date);
+        workRepository.delete(work);
+        return "삭제 완료";
+    }
 
+    //회원 근무 당일 조회
     @Override
     @Transactional
     public Page<WorkResponse> getDayWork(Employee employee, Pageable pageable){

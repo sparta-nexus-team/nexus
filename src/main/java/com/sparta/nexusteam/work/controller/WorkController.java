@@ -64,6 +64,23 @@ public class WorkController {
         }
     }
 
+    @DeleteMapping("/{date}")
+    public ResponseEntity<CommonResponse> deleteWork(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Date date,
+            BindingResult bindingResult
+    ){
+        if(bindingResult.hasErrors()){
+            return ControllerUtil.getFieldErrorResponseEntity(bindingResult,"근무 수정 실패");
+        }
+        try{
+            String message = workService.deleteWork(userDetails.getEmployee(),date);
+            return ControllerUtil.getResponseEntity(message,message);
+        }catch(Exception e){
+            return ControllerUtil.getBadRequestResponseEntity(e);
+        }
+    }
+
     @GetMapping("/today")
     public ResponseEntity<CommonResponse> getDayWork(
             @AuthenticationPrincipal UserDetailsImpl userDetails,

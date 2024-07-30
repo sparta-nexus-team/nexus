@@ -12,6 +12,8 @@ import java.util.Date;
 public interface WorkService {
     Long saveWork(Employee employee,WorkRequest workRequest);
     Long updateWork(Employee employee, Date date, WorkRequest workRequest);
+
+    String deleteWork(Employee employee,Date date);
     Page<WorkResponse> getDayWork(Employee employee,Pageable pageable);
 
     Page<WorkResponse> getWeekWork(Employee employee, Pageable pageable);
