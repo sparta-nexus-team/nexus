@@ -13,7 +13,7 @@ public class WorkResponse {
 
     private Date work_date;
 
-    private SalaryType work_status;
+    private SalaryType salary_type;
 
     private String message;
 
@@ -22,7 +22,7 @@ public class WorkResponse {
     public WorkResponse(Work work) {
         this.work_time = work.getWork_time();
         this.work_date = work.getWork_date();
-        this.work_status = work.getWork_status();
+        this.salary_type = work.getSalaryType();
         this.message = work.getMessage();
         this.allowed_status = work.getAllowed_status();
     }
