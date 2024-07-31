@@ -29,7 +29,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Caching(
             put = @CachePut(value = "department", key = "#result.id"),
-            evict = @CacheEvict(value = "departments", key = "#employee.company.id", allEntries = true)
+            evict = @CacheEvict(value = "departments", key = "#employee.company.id")
     )
     public Department createDepartment(Department department, Employee employee) {
         if (departmentRepository.existsByNameAndCompany(department.getName(), employee.getCompany())) {
@@ -40,13 +40,14 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new AccessDeniedException("권한이 없습니다");
         }
 
+        department.setCompany(employee.getCompany());
         return departmentRepository.save(department);
     }
 
     @Override
     @Caching(
-            put = @CachePut(value = "department", key = "#id"),
-            evict = @CacheEvict(value = "departments", key = "#employee.company.id", allEntries = true)
+            put = @CachePut(value = "department", key = "#result.id"),
+            evict = @CacheEvict(value = "departments", key = "#employee.company.id")
     )
     public Department updateDepartment(Long id, Department departmentDetails, Employee employee) {
         Department department = departmentRepository.findById(id)
@@ -72,7 +73,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Caching(
             evict = {
                     @CacheEvict(value = "department", key = "#id"),
-                    @CacheEvict(value = "departments", key = "#employee.company.id", allEntries = true)
+                    @CacheEvict(value = "departments", key = "#employee.company.id")
             }
     )
     public Long deleteDepartment(Long id, Employee employee) {
