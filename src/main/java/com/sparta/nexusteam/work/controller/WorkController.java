@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/work")
+@RequestMapping("/api/work")
 public class WorkController {
     private final WorkServiceImpl workService;
 

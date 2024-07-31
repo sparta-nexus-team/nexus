@@ -36,11 +36,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
-		/*String path = req.getRequestURI();
-		if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui") || path.startsWith("/swagger-resources") || path.startsWith("/webjars") || path.startsWith("/api/signup")) {
-			filterChain.doFilter(req, res);
-			return;
-		}*/
 
 		String accessToken = jwtProvider.getAccessTokenFromRequest(req);
 		String refreshToken = "";
