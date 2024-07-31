@@ -68,6 +68,9 @@ public class WebSecurityConfig {
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                 .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
+                .requestMatchers(HttpMethod.GET,"/").permitAll()
+                .requestMatchers(HttpMethod.GET,"/login").permitAll()
+                .requestMatchers(HttpMethod.GET,"/signup").permitAll()
                 .requestMatchers("/", "/api/signup").permitAll()
                 .anyRequest().authenticated()
         );
