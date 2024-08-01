@@ -100,7 +100,7 @@
   <div class="row justify-content-center">
     <div class="col-md-8">
       <h2 class="text-center">Sign Up</h2>
-      <form action="/signup" method="post">
+      <form id="signupForm" action="/signup" method="post">
         <div class="mb-3">
           <label for="accountId" class="form-label">Account ID</label>
           <input type="text" class="form-control" id="accountId" name="accountId" required>
@@ -132,10 +132,52 @@
           <input type="text" class="form-control" id="companyName" name="companyName" required>
         </div>
         <button type="submit" class="btn btn-primary w-100">가입</button>
+        <div id="signupError" style="display:none; color:red;"></div>
       </form>
     </div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const signupForm = document.getElementById('signupForm');
+    signupForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const accountId = document.getElementById('accountId').value;
+      const password = document.getElementById('password').value;
+      const userName = document.getElementById('userName').value;
+      const email = document.getElementById('email').value;
+      const phoneNumber = document.getElementById('phoneNumber').value;
+      const address = document.getElementById('address').value;
+      const companyName = document.getElementById('companyName').value;
+
+      fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ accountId, password, userName, email, phoneNumber, address, companyName })
+      })
+              .then(response => {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error('Signup failed');
+                }
+              })
+              .then(data => {
+                if (data.statusCode === 200) {
+                  alert('Signup successful!');
+                  window.location.href = '/login';
+                }
+              })
+              .catch(error => {
+                const signupError = document.getElementById('signupError');
+                signupError.textContent = error.message;
+                signupError.style.display = 'block';
+              });
+    });
+  });
+</script>
 </body>
 </html>
