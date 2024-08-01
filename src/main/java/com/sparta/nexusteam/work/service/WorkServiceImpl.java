@@ -6,6 +6,10 @@ import com.sparta.nexusteam.work.dto.WorkResponse;
 import com.sparta.nexusteam.work.entity.Work;
 import com.sparta.nexusteam.work.entity.SalaryType;
 import com.sparta.nexusteam.work.repository.WorkRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,11 @@ public class WorkServiceImpl implements WorkService {
     //근무 요청
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "workDay", key = "#employee.id"),
+            @CacheEvict(value = "workWeek", key = "#employee.id"),
+            @CacheEvict(value = "workMonth", key = "#employee.id")
+    })
     public Long saveWork(Employee employee,WorkRequest workRequest){
         SalaryType salaryType = workRequest.getSalary_type();
         Duration work_time = workRequest.getWork_time();
@@ -38,6 +47,12 @@ public class WorkServiceImpl implements WorkService {
 
     //근무 수근
     @Override
+    @Transactional
+    @Caching(put = {
+            @CachePut(value = "workDay", key = "#employee.id"),
+            @CachePut(value = "workWeek", key = "#employee.id"),
+            @CachePut(value = "workMonth", key = "#employee.id")
+    })
     public Long updateWork(Employee employee,Date date ,WorkRequest workRequest) {
         Work work = workRepository.findByEmployeeAndWorkDate(employee,date);
         work.update(workRequest);
@@ -45,6 +60,12 @@ public class WorkServiceImpl implements WorkService {
     }
     //근무 삭제
     @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "workDay", key = "#employee.id"),
+            @CacheEvict(value = "workWeek", key = "#employee.id"),
+            @CacheEvict(value = "workMonth", key = "#employee.id")
+    })
     public String deleteWork(Employee employee, Date date) {
         Work work =workRepository.findByEmployeeAndWorkDate(employee,date);
         workRepository.delete(work);
@@ -54,6 +75,7 @@ public class WorkServiceImpl implements WorkService {
     //회원 근무 당일 조회
     @Override
     @Transactional
+    @Cacheable(value = "workDay", key = "#employee.id")
     public Page<WorkResponse> getDayWork(Employee employee, Pageable pageable){
         // 현재 날짜를 LocalDate로 가져오기
         LocalDate localDate = LocalDate.now();
@@ -71,6 +93,7 @@ public class WorkServiceImpl implements WorkService {
     //회원 근무 주간 조회
     @Override
     @Transactional
+    @Cacheable(value = "workWeek", key = "#employee.id")
     public Page<WorkResponse> getWeekWork(Employee employee, Pageable pageable) {
         LocalDate today = LocalDate.now();
 
@@ -86,6 +109,8 @@ public class WorkServiceImpl implements WorkService {
     }
 
     //회원 근무 월간 조회
+    @Transactional
+    @Cacheable(value = "workMonth", key = "#employee.id")
     public Page<WorkResponse> getMonthWork(Employee employee,Pageable pageable) {
         LocalDate today = LocalDate.now();
 
@@ -101,6 +126,7 @@ public class WorkServiceImpl implements WorkService {
     //직원 근무 당일 조회
     @Override
     @Transactional
+    @Cacheable(value = "memberWorkDay", key = "#company_id")
     public Page<WorkResponse> getMemberDayWork(Long company_id, Pageable pageable) {
         // 현재 날짜를 LocalDate로 가져오기
         LocalDate localDate = LocalDate.now();
@@ -117,6 +143,7 @@ public class WorkServiceImpl implements WorkService {
     //직원 근무 주간 조회
     @Override
     @Transactional
+    @Cacheable(value = "memberWorkWeek", key = "#company_id")
     public Page<WorkResponse> getMemberWeekWork(Long company_id,Pageable pageable){
         LocalDate today = LocalDate.now();
 
@@ -133,6 +160,7 @@ public class WorkServiceImpl implements WorkService {
     //직원 근무 월간 조회
     @Override
     @Transactional
+    @Cacheable(value = "memberWorkMonth", key = "#company_id")
     public Page<WorkResponse> getMemberMonthWork(Long company_id,Pageable pageable){
         LocalDate today = LocalDate.now();
 
