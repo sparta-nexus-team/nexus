@@ -56,6 +56,7 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         // CSRF 설정
         http.csrf(AbstractHttpConfigurer::disable);
 
