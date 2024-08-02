@@ -67,6 +67,7 @@
       </div> -->
     </div>
 
+
     <!-- 휴가 사용 계획 섹션 -->
     <div>
       <h5 style="margin-top:40px;">휴가 사용 계획</h5>
@@ -304,6 +305,7 @@
         listGroupDiv.appendChild(item);
         container.appendChild(listGroupDiv);
 
+        // offcanvas 값 변경
         item.addEventListener('click', function () {
           const offcanvasTitle = document.getElementById('vacationInfoLabel');
           offcanvasTitle.textContent = `${vacation.employeeUserName}의 휴가`;
