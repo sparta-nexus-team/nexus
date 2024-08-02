@@ -55,13 +55,13 @@ public class Employee {
 
     private String refreshToken;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Department department;
 
     @ManyToOne
     private Company company;
 
-    public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company) {
+    public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company, Department department) {
         accountId = request.getAccountId();
         password = encodedPassword;
         userName = request.getUserName();
@@ -71,9 +71,10 @@ public class Employee {
         this.position = position;
         this.role = role;
         this.company = company;
+        this.department = department;
     }
 
-    public Employee(InviteSignupRequest request, String encodedPassword, Position position, UserRole role, Company company) {
+    public Employee(InviteSignupRequest request, String encodedPassword, Position position, UserRole role, Company company, Department department) {
         accountId = request.getAccountId();
         password = encodedPassword;
         userName = request.getUserName();
@@ -83,6 +84,7 @@ public class Employee {
         this.position = position;
         this.role = role;
         this.company = company;
+        this.department = department;
     }
 
     public void updateRefreshToken(String newRefreshToken) {

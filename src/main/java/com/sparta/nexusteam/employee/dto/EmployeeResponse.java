@@ -12,7 +12,7 @@ public class EmployeeResponse {
     private String email;
     private String phoneNumber;
     private Position position;
-    private Department department;
+    private String departmentName;
 
     public EmployeeResponse(Employee employee) {
         this.id = employee.getId();
@@ -20,6 +20,6 @@ public class EmployeeResponse {
         this.email = employee.getEmail();
         this.phoneNumber = employee.getPhoneNumber();
         this.position = employee.getPosition();
-        this.department = employee.getDepartment();
+        this.departmentName = employee.getDepartment().getName();
     }
 }

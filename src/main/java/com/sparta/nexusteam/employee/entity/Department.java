@@ -21,7 +21,7 @@ public class Department {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<Employee> employees;
 
     @ManyToOne
@@ -29,5 +29,10 @@ public class Department {
 
     public void updateName(String newName) {
         this.name = newName;
+    }
+
+    public Department(String name, Company company) {
+        this.name = name;
+        this.company = company;
     }
 }
