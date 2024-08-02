@@ -4,6 +4,38 @@
     <meta charset="UTF-8">
     <title>Dashboard - Nexus.team</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #contextMenu {
+            position: absolute;
+            display: none;
+            z-index: 1000;
+            width: 200px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .context-menu {
+            position: fixed;
+            display: none;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            z-index: 1000;
+        }
+
+        .context-menu ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+
+        .context-menu li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .context-menu li:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
 <!-- Navigation Bar -->
@@ -16,7 +48,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">구성원</a>
+                    <a class="nav-link" href="#" id="employeeListBtn">구성원</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">급여</a>
@@ -36,16 +68,237 @@
     </div>
 </nav>
 
-<!-- Main Content -->
 <div class="container mt-5">
     <div class="row">
-        <div class="col-md-12">
+        <!-- Department List Column -->
+        <div class="col-md-4">
+            <h2>Departments</h2>
+            <ul id="departmentList" class="list-group">
+                <!-- 부서 목록이 동적으로 삽입됩니다 -->
+            </ul>
+        </div>
+        <!-- Main Content Column -->
+        <div class="col-md-8" id="mainContent">
             <h1>Welcome, <span th:text="${userName}">User</span>!</h1>
             <p>This is your dashboard.</p>
         </div>
     </div>
 </div>
+<!-- 컨텍스트 메뉴를 위한 HTML -->
+<div id="contextMenu" class="context-menu">
+    <ul class="list-group">
+        <li class="list-group-item context-action" data-action="create">Create New Department</li>
+        <li class="list-group-item context-action" data-action="edit">Edit Department</li>
+        <li class="list-group-item context-action" data-action="delete">Delete Department</li>
+    </ul>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const employeeListBtn = document.getElementById('employeeListBtn');
+        const mainContent = document.getElementById('mainContent');
+
+        employeeListBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            fetch('/employee/list') // 서버에서 직원 목록을 가져오는 API 엔드포인트
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch employee list');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let employeeHtml = '<h1>Employee List</h1><ul class="list-group">';
+                    data.data.forEach(employee => {
+                        employeeHtml += `<li class="list-group-item employee-item" data-id="${employee.id}">${employee.userName} - ${employee.position} (${employee.departmentName})</li>`;
+                    });
+                    employeeHtml += '</ul>';
+                    mainContent.innerHTML = employeeHtml;
+
+                    // 각 직원 리스트 항목에 클릭 이벤트 추가
+                    document.querySelectorAll('.employee-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const employeeId = this.getAttribute('data-id');
+                            fetchEmployeeDetails(employeeId);
+                        });
+                    });
+
+                })
+                .catch(error => {
+                    mainContent.innerHTML = `<div class="alert alert-danger" role="alert">${error.message}</div>`;
+                });
+        });
+    });
+    // 직원 상세 정보를 가져오는 함수
+    function fetchEmployeeDetails(employeeId) {
+        fetch(`/employee/${employeeId}`) // 직원 상세 정보를 가져오는 API 엔드포인트
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch employee details');
+                }
+                return response.json();
+            })
+            .then(data => {
+                let employee = data.data;
+                let detailsHtml = `
+                        <h1>Employee Details</h1>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">${employee.userName}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${employee.position}</h6>
+                                <p class="card-text">Department: ${employee.departmentName}</p>
+                                <p class="card-text">Email: ${employee.email}</p>
+                                <p class="card-text">Phone: ${employee.phoneNumber}</p>
+                                <a href="#" class="card-link" id="backToList">Back to list</a>
+                            </div>
+                        </div>
+                    `;
+                mainContent.innerHTML = detailsHtml;
+
+                // "Back to list" 버튼 클릭 시 리스트로 돌아가기
+                document.getElementById('backToList').addEventListener('click', function(event) {
+                    event.preventDefault();
+                    employeeListBtn.click();
+                });
+            })
+            .catch(error => {
+                mainContent.innerHTML = `<div class="alert alert-danger" role="alert">${error.message}</div>`;
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchDepartments();
+
+        function fetchDepartments() {
+            fetch('/employee/departments')
+                .then(response => response.json())
+                .then(departments => {
+                    const list = document.getElementById('departmentList');
+                    list.innerHTML = ''; // 기존 목록 초기화
+
+                    departments.data.forEach(dept => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.textContent = dept.name;
+                        li.dataset.id = dept.id;
+
+                        if (userIsManager) { // userIsManager는 서버나 클라이언트 상태에 따라 설정됩니다.
+                            li.addEventListener('contextmenu', function(event) {
+                                event.preventDefault();
+                                showContextMenu(event, dept.id);
+                            });
+                        }
+
+                        list.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error loading departments:', error));
+        }
+
+        function showContextMenu(event, deptId) {
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.top = `${event.clientY}px`;
+            contextMenu.style.left = `${event.clientX}px`;
+            contextMenu.style.display = 'block';
+            contextMenu.dataset.departmentId = deptId; // 선택된 부서 ID를 메뉴에 저장
+
+            document.querySelectorAll('.context-action').forEach(item => {
+                item.onclick = function() {
+                    const action = this.dataset.action;
+                    contextMenu.style.display = 'none'; // 메뉴 숨기기
+                    handleAction(action, deptId);
+                };
+            });
+        }
+
+        function handleAction(action, deptId) {
+            switch (action) {
+                case 'create':
+                    const newName = prompt("Enter the name of the new department:");
+                    if (newName) {
+                        fetch('/employee/departments', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name: newName })
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    return response.json();
+                                } else {
+                                    throw new Error('Failed to create department');
+                                }
+                            })
+                            .then(data => {
+                                console.log('Department created:', data.data);
+                                fetchDepartments();
+                            })
+                            .catch(error => console.error(error));
+                    }
+                    break;
+                case 'edit':
+                    const editName = prompt("Enter the new name of the department:");
+                    if (editName) {
+                        fetch(`/employee/departments/${deptId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name: editName })
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    return response.json();
+                                } else {
+                                    throw new Error('Failed to edit department');
+                                }
+                            })
+                            .then(data => {
+                                console.log('Department updated:', data.data);
+                                fetchDepartments(); // Reload the department list
+                            })
+                            .catch(error => console.error(error));
+                    }
+                    break;
+                case 'delete':
+                    if (confirm("Are you sure you want to delete this department?")) {
+                        fetch(`/employee/departments/${deptId}`, {
+                            method: 'DELETE'
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    console.log('Department deleted');
+                                    fetchDepartments(); // Reload the department list
+                                } else {
+                                    throw new Error('Failed to delete department');
+                                }
+                            })
+                            .catch(error => console.error(error));
+                    }
+                    break;
+            }
+        }
+
+        document.addEventListener('click', () => {
+            const contextMenu = document.getElementById('contextMenu');
+            if (contextMenu.style.display === 'block') {
+                contextMenu.style.display = 'none';
+            }
+        });
+    });
+
+
+
+    // 이 함수는 페이지를 로드할 때 사용자의 권한을 확인하여 설정해야 합니다.
+    function checkUserPermission() {
+        // 사용자 권한을 체크하고 userIsManager 변수 설정
+        return true; // 임시로 true 반환
+    }
+
+    const userIsManager = checkUserPermission();
+</script>
 </body>
 </html>
