@@ -1,5 +1,8 @@
 package com.sparta.nexusteam.front;
 
+import com.sparta.nexusteam.employee.entity.UserRole;
+import com.sparta.nexusteam.security.UserDetailsImpl;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -26,7 +29,10 @@ public class FrontController {
     }
 
     @GetMapping("/vacation")
-    public String vacation(){
+    public String vacation(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        if(userDetails.getEmployee().getRole().equals(UserRole.MANAGER)){
+
+        }
         return "vacation.html";
     }
 }
