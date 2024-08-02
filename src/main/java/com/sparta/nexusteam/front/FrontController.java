@@ -21,7 +21,12 @@ public class FrontController {
     }
 
     @GetMapping("/main")
-    public String home(){
-        return "home.html";
+    public String main(){
+        return "main.html";
+    }
+
+    @GetMapping("/vacation")
+    public String vacation(){
+        return "vacation.html";
     }
 }
