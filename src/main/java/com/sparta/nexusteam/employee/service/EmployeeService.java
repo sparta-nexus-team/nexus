@@ -14,8 +14,8 @@ public interface EmployeeService {
     SignupResponse setNewEmployee(String token, InviteSignupRequest invitesignupRequest);
     List<EmployeeResponse> getAllEmployees(Employee employeeDetail);
     EmployeeResponse getEmployeeById(Long id);
-    EmployeeResponse updateEmployee(Long id, EmployeeRequest request);
-    Long deleteEmployee(Long id);
+    EmployeeResponse updateEmployee(Long id, EmployeeRequest request, Employee employeeDetail);
+    Long deleteEmployee(Long id, Employee employeeDetail);
     List<EmployeeResponse> getEmployeesByDepartment(String departmentName, Employee employee);
     List<EmployeeResponse> getEmployeesByUserName(String userName, Employee employeeDetail);
 }
