@@ -106,7 +106,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Cacheable(value = "allEmployees", key = "#employeeDetail.company.id")
+    /*@Cacheable(value = "allEmployees", key = "#employeeDetail.company.id")*/
     public List<EmployeeResponse> getAllEmployees(Employee employeeDetail) {
         List<Employee> employees = employeeRepository.findAllByCompany(employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
@@ -120,7 +120,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Cacheable(value = "allEmployeesByDepartment", key = "#departmentName + '_' + #employeeDetail.company.id")
+    /*@Cacheable(value = "allEmployeesByDepartment", key = "#departmentName + '_' + #employeeDetail.company.id")*/
     public List<EmployeeResponse> getEmployeesByDepartment(String departmentName, Employee employeeDetail) {
         List<Employee> employees = employeeRepository.findByDepartmentNameAndCompany(departmentName, employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
@@ -134,7 +134,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Cacheable(value = "allEmployeesByUserName", key = "#userName + '_' + #employeeDetail.company.id")
+    /*@Cacheable(value = "allEmployeesByUserName", key = "#userName + '_' + #employeeDetail.company.id")*/
     public List<EmployeeResponse> getEmployeesByUserName(String userName, Employee employeeDetail) {
         List<Employee> employees = employeeRepository.findByUserNameAndCompany(userName, employeeDetail.getCompany());
         List<EmployeeResponse> responseList = new ArrayList<>();
@@ -148,7 +148,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Cacheable(value = "employee", key = "#id")
+    /*@Cacheable(value = "employee", key = "#id")*/
     public EmployeeResponse getEmployeeById(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
@@ -157,14 +157,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Caching(
+    /*@Caching(
             put = @CachePut(value = "employee", key = "#id"),
             evict = {
                     @CacheEvict(value = "allEmployees", allEntries = true),
                     @CacheEvict(value = "allEmployeesByDepartment", allEntries = true),
                     @CacheEvict(value = "allEmployeesByUserName", allEntries = true)
             }
-    )
+    )*/
     public EmployeeResponse updateEmployee(Long id, EmployeeRequest request, Employee employeeDetail) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
@@ -173,7 +173,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new AccessDeniedException("권한이 없습니다");
         }
 
-        employee.updateProfile(request);
+        // 열거형과 객체 매핑
+        Position position = Position.valueOf(request.getPosition());
+        UserRole role = UserRole.valueOf(request.getRole());
+
+        // 부서 매핑 - 부서 이름으로 Department 객체 조회
+        Department department = departmentRepository.findByNameAndCompany(request.getDepartment(), employeeDetail.getCompany());
+
+        employee.updateProfile(request, position, department, role);
 
         employeeRepository.save(employee);
 
@@ -181,14 +188,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Caching(
+    /*@Caching(
             evict = {
                     @CacheEvict(value = "employee", key = "#id"),
                     @CacheEvict(value = "allEmployees", allEntries = true),
                     @CacheEvict(value = "allEmployeesByDepartment", allEntries = true),
                     @CacheEvict(value = "allEmployeesByUserName", allEntries = true)
             }
-    )
+    )*/
     public Long deleteEmployee(Long id, Employee employeeDetail) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
@@ -200,6 +207,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.delete(employee);
 
         return employee.getId();
+    }
+
+    @Override
+    public boolean isManger(Employee employee) {
+        return UserRole.MANAGER.equals(employee.getRole());
     }
 
     private String sendInvitationEmail(String email, String token) {
@@ -218,4 +230,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new RuntimeException("전송 실패");
         }
     }
+
+
 }

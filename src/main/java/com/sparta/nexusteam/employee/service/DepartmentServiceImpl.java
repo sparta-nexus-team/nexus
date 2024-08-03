@@ -23,7 +23,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentRepository departmentRepository;
 
     @Override
-    @Cacheable(value = "departments", key = "#employee.company.id")
+    /*@Cacheable(value = "departments", key = "#employee.company.id")*/
     public List<DepartmentResponse> getAllDepartments(Employee employee) {
         List<Department> departmentList = departmentRepository.findAllByCompany(employee.getCompany());
         List<DepartmentResponse> departmentResponseList = new ArrayList<>();
@@ -35,10 +35,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @Caching(
+    /*@Caching(
             put = @CachePut(value = "department", key = "#result.id"),
             evict = @CacheEvict(value = "departments", key = "#employee.company.id")
-    )
+    )*/
     public Department createDepartment(Department department, Employee employee) {
         if (departmentRepository.existsByNameAndCompany(department.getName(), employee.getCompany())) {
             throw new IllegalArgumentException("이미 존재하는 이름입니다");
@@ -49,14 +49,15 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         department.setCompany(employee.getCompany());
+
         return departmentRepository.save(department);
     }
 
     @Override
-    @Caching(
+    /*@Caching(
             put = @CachePut(value = "department", key = "#result.id"),
             evict = @CacheEvict(value = "departments", key = "#employee.company.id")
-    )
+    )*/
     public Department updateDepartment(Long id, Department departmentDetails, Employee employee) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("부서를 찾을 수 없습니다 " + id));
@@ -78,12 +79,12 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @Caching(
+    /*@Caching(
             evict = {
                     @CacheEvict(value = "department", key = "#id"),
                     @CacheEvict(value = "departments", key = "#employee.company.id")
             }
-    )
+    )*/
     public Long deleteDepartment(Long id, Employee employee) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("부서를 찾을 수 없습니다 " + id));
