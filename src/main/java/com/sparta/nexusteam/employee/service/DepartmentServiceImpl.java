@@ -1,5 +1,6 @@
 package com.sparta.nexusteam.employee.service;
 
+import com.sparta.nexusteam.employee.dto.DepartmentResponse;
 import com.sparta.nexusteam.employee.entity.Department;
 import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.employee.entity.UserRole;
@@ -12,6 +13,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,8 +24,14 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @Cacheable(value = "departments", key = "#employee.company.id")
-    public List<Department> getAllDepartments(Employee employee) {
-        return departmentRepository.findAllByCompany(employee.getCompany());
+    public List<DepartmentResponse> getAllDepartments(Employee employee) {
+        List<Department> departmentList = departmentRepository.findAllByCompany(employee.getCompany());
+        List<DepartmentResponse> departmentResponseList = new ArrayList<>();
+        for(Department department : departmentList) {
+            DepartmentResponse response = new DepartmentResponse(department.getId(), department.getName());
+            departmentResponseList.add(response);
+        }
+        return departmentResponseList;
     }
 
     @Override

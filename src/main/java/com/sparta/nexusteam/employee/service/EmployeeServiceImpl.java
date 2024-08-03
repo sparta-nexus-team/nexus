@@ -3,6 +3,7 @@ package com.sparta.nexusteam.employee.service;
 import com.sparta.nexusteam.employee.dto.*;
 import com.sparta.nexusteam.employee.entity.*;
 import com.sparta.nexusteam.employee.repository.CompanyRepository;
+import com.sparta.nexusteam.employee.repository.DepartmentRepository;
 import com.sparta.nexusteam.employee.repository.EmployeeRepository;
 import com.sparta.nexusteam.employee.repository.InvitationRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,6 +35,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final CompanyRepository companyRepository;
 
+    private final DepartmentRepository departmentRepository;
+
     private final JavaMailSender mailSender;
 
     private final PasswordEncoder passwordEncoder;
@@ -48,11 +51,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Company company = new Company(request.getCompanyName());
-
         companyRepository.save(company);
 
+        Department department = new Department("발령대기", company);
+        departmentRepository.save(department);
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,UserRole.MANAGER, company);
+        Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,UserRole.MANAGER, company, department);
 
         employeeRepository.save(employee);
 
@@ -91,8 +96,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         Company company = companyRepository.findByName(invitation.getCompanyName());
+        Department department = departmentRepository.findById(1L).orElseThrow(RuntimeException::new);
         String encodedPassword = passwordEncoder.encode(invitesignupRequest.getPassword());
-        Employee employee = new Employee(invitesignupRequest,encodedPassword, Position.WORKER ,UserRole.USER, company);
+        Employee employee = new Employee(invitesignupRequest,encodedPassword, Position.WORKER ,UserRole.USER, company, department);
 
         employeeRepository.save(employee);
 
