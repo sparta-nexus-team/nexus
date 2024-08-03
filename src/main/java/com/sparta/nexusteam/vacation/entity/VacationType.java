@@ -2,6 +2,7 @@ package com.sparta.nexusteam.vacation.entity;
 
 
 import com.sparta.nexusteam.employee.entity.Company;
+import com.sparta.nexusteam.vacation.dto.PutVacationTypeRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,5 +40,10 @@ public class VacationType {
         this.name = name;
         this.days = days;
         this.company = company;
+    }
+
+    public void updateVacationType(PutVacationTypeRequest requestDto) {
+        this.name=requestDto.getName();
+        this.days=requestDto.getDays();
     }
 }

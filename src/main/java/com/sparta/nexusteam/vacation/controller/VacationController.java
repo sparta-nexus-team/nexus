@@ -10,6 +10,7 @@ import com.sparta.nexusteam.security.UserDetailsImpl;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
+import com.sparta.nexusteam.vacation.dto.PutVacationTypeRequest;
 import com.sparta.nexusteam.vacation.dto.VacationResponse;
 import com.sparta.nexusteam.vacation.dto.VacationTypeResponse;
 import com.sparta.nexusteam.vacation.service.VacationServiceImpl;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -175,6 +177,38 @@ public class VacationController {
         try {
             vacationServiceImpl.deleteVacation(vacationId);
             return getResponseEntity(null, "휴가 삭제 성공");
+        } catch (Exception e) {
+            return getBadRequestResponseEntity(e);
+        }
+    }
+    /**
+     * 휴가 종류 삭제
+     */
+    @DeleteMapping("/vacationType/{vacationTypeId}")
+    public ResponseEntity<CommonResponse> deleteVacationType(@PathVariable Long vacationTypeId) {
+        try {
+            vacationServiceImpl.deleteVacationType(vacationTypeId);
+            return getResponseEntity(null, "휴가 종류 삭제 성공");
+        } catch (Exception e) {
+            return getBadRequestResponseEntity(e);
+        }
+    }
+    /**
+     * 휴가 종류 수정
+     */
+    @PutMapping("/vacationType/{vacationTypeId}")
+    public ResponseEntity<CommonResponse> updateVacationType(
+            @PathVariable Long vacationTypeId,
+            @Valid @RequestBody PutVacationTypeRequest requestDto,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return getFieldErrorResponseEntity(bindingResult, "휴가 종류 수정 실패");
+        }
+        try {
+            VacationTypeResponse responseDto = vacationServiceImpl.updateVacationType(
+                    vacationTypeId,
+                    requestDto);
+            return getResponseEntity(responseDto, "휴가 종류 수정 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
