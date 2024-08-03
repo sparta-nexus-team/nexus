@@ -31,8 +31,10 @@ public class FrontController {
     @GetMapping("/vacation")
     public String vacation(@AuthenticationPrincipal UserDetailsImpl userDetails){
         if(userDetails.getEmployee().getRole().equals(UserRole.MANAGER)){
-
+            return "vacationManage.html";
         }
-        return "vacation.html";
+        else {
+            return "vacation.html";
+        }
     }
 }

@@ -135,13 +135,14 @@
         <h6 id="offc-vacation-approval" d></h6>
       </div>
 
+      <button type="button" id="vacation-delete-button" class="btn btn-outline-danger">삭제</button>
     </div>
 
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      //휴가 종류 카드 등록
+      //휴가 종류 카드 조회
       fetch('/vacation-type', {
         method: 'GET',
         credentials: "include"
@@ -194,56 +195,64 @@
               const vacationDays = document.getElementById('vacation-days');
               vacationAddLabel.textContent = vacationType.name;
               vacationDays.textContent = `사용가능일:${vacationType.days}`;
-            });
-
-            //휴가 등록 
-            document.getElementById('submitButton').addEventListener('click', function () {
-              // 폼 데이터 수집
-              const startDateTime = document.getElementById('start-datetime').value;
-              const endDateTime = document.getElementById('end-datetime').value;
-
-              // API 요청 데이터 구성
-              const data = {
-                startDate: startDateTime,
-                endDate: endDateTime
-              };
-
-              // Fetch API를 사용하여 POST 요청 보내기
-              fetch(`/vacation-type/${vacationType.id}/vacation`, {
-                method: 'POST', // HTTP 메서드 설정
-                headers: {
-                  'Content-Type': 'application/json' // JSON 데이터 전송
-                },
-                body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
-              })
-                .then(response => {
-                  if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                  }
-                  return response.json();
-                })
-                .then(data => {
-                  console.log('Success:', data);
-                  // 요청이 성공했을 때 실행할 코드
-                  alert("휴가 요청 성공!");
-                  const planContainer = document.getElementById('vacation-plan-container');
-                  addlist(data.data, planContainer);
-                })
-                .catch((error) => {
-                  console.error('Error:', error);
-                  // 에러가 발생했을 때 실행할 코드
-                  const check = document.getElementById('check');
-                  check.textContent = "요청 실패";
-                  check.style.color = "red";
-                });
+              vacationAddLabel.dataset.id = vacationType.id;
             });
           });
+
         })
         .catch(error => {
           console.error('Error fetching data:', error);
         });
 
 
+
+      //휴가 등록 이벤트
+      document.getElementById('submitButton').addEventListener('click', function () {
+        // 폼 데이터 수집
+        const startDateTime = document.getElementById('start-datetime').value;
+        const endDateTime = document.getElementById('end-datetime').value;
+
+        // API 요청 데이터 구성
+        const data = {
+          startDate: startDateTime,
+          endDate: endDateTime
+        };
+
+        const vacationTypeId = document.getElementById('vacationAddLabel').dataset.id;
+
+        // Fetch API를 사용하여 POST 요청 보내기
+        fetch(`/vacation-type/${vacationTypeId}/vacation`, {
+          method: 'POST', // HTTP 메서드 설정
+          headers: {
+            'Content-Type': 'application/json' // JSON 데이터 전송
+          },
+          body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Success:', data);
+            // 요청이 성공했을 때 실행할 코드
+            if (data.statusCode == 200) {
+              alert("휴가 요청 성공!");
+              location.reload();
+            } else {
+              alert("휴가 요청 실패");
+            }
+
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+            // 에러가 발생했을 때 실행할 코드
+            alert("휴가 요청 실패");
+          });
+
+
+      });
       //휴가 사용 계획 목록 등록
       fetch('/vacation/before', {
         method: 'GET',
@@ -255,12 +264,14 @@
           const planContainer = document.getElementById('vacation-plan-container');
           data.data.forEach(vacation => {
             addlist(vacation, planContainer);
+
+
           });
         })
         .catch(error => {
           console.error('Error fetching data:', error);
         });
-        
+
       //휴가 사용 기록 목록 등록
       fetch('/vacation/after', {
         method: 'GET',
@@ -317,9 +328,39 @@
           vacationEndDate.textContent = `휴가 종료 : ${vacation.endDate}`;
           const vacationApproval = document.getElementById('offc-vacation-approval');
           vacationApproval.textContent = `휴가 승인상태 : ${vacation.approvalStatus}`;
+          let vdb = document.getElementById("vacation-delete-button");
+          vdb.setAttribute('data-id', vacation.id);
         });
       }
+      document.getElementById("vacation-delete-button").addEventListener('click', function () {
+        const vacationId = document.getElementById("vacation-delete-button").dataset.id;
+        fetch(`/vacation/${vacationId}`, {
+          method: 'DELETE'
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+          }
+          return response.json();
+        })
+          .then(data => {
+            console.log('Success:', data);
+            // 요청이 성공했을 때 실행할 코드
+            if (data.statusCode == 200) {
+              alert("휴가 삭제 성공!");
+              location.reload();
+            } else {
+              alert("휴가 삭제 실패!");
 
+            }
+
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+            // 에러가 발생했을 때 실행할 코드
+            alert("휴가 삭제 실패!");
+
+          });
+      });
     });
 
 
