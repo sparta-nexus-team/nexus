@@ -3,6 +3,7 @@ package com.sparta.nexusteam.vacation.entity;
 
 import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.vacation.dto.PutVacationTypeRequest;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +11,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,6 +38,9 @@ public class VacationType {
     @JoinColumn(name="company_id",nullable=false)
     @ManyToOne
     private Company company;
+
+    @OneToMany(mappedBy = "vacationType",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vacation> vacations;
 
     public VacationType(String name, int days, Company company) {
         this.name = name;
