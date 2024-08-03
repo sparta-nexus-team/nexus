@@ -184,7 +184,7 @@ public class VacationController {
     /**
      * 휴가 종류 삭제
      */
-    @DeleteMapping("/vacationType/{vacationTypeId}")
+    @DeleteMapping("/vacation-type/{vacationTypeId}")
     public ResponseEntity<CommonResponse> deleteVacationType(@PathVariable Long vacationTypeId) {
         try {
             vacationServiceImpl.deleteVacationType(vacationTypeId);
@@ -196,7 +196,7 @@ public class VacationController {
     /**
      * 휴가 종류 수정
      */
-    @PutMapping("/vacationType/{vacationTypeId}")
+    @PutMapping("/vacation-type/{vacationTypeId}")
     public ResponseEntity<CommonResponse> updateVacationType(
             @PathVariable Long vacationTypeId,
             @Valid @RequestBody PutVacationTypeRequest requestDto,
