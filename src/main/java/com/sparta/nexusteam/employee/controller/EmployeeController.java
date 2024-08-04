@@ -193,7 +193,7 @@ public class EmployeeController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try{
-            List<Department> response = departmentServiceImpl.getAllDepartments(userDetails.getEmployee());
+            List<DepartmentResponse> response = departmentServiceImpl.getAllDepartments(userDetails.getEmployee());
             return getResponseEntity(response, "모든 부서 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);

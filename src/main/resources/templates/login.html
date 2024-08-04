@@ -39,13 +39,12 @@
             const accountId = document.getElementById('accountId').value;
             const password = document.getElementById('password').value;
 
-            fetch('http://localhost:8080/api/login', {
+            fetch('/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ accountId, password }),
-                mode: 'cors'
+                body: JSON.stringify({ accountId, password })
             })
                 .then(response => {
                     if (response.ok) {
