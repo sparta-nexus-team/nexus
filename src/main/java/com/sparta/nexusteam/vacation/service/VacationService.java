@@ -4,6 +4,7 @@ import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
+import com.sparta.nexusteam.vacation.dto.PutVacationTypeRequest;
 import com.sparta.nexusteam.vacation.dto.VacationResponse;
 import com.sparta.nexusteam.vacation.dto.VacationTypeResponse;
 import java.util.List;
@@ -27,4 +28,8 @@ public interface VacationService {
     VacationResponse updateVacationApprovalStatus(Long vacationId, PatchVacationApprovalRequest requestDto);
 
     void deleteVacation(Long vacationId);
+
+    VacationTypeResponse updateVacationType(Long vacationTypeId, PutVacationTypeRequest requestDto);
+
+    void deleteVacationType(Long vacationTypeId);
 }
