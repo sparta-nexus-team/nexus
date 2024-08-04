@@ -24,8 +24,8 @@ public class FrontController {
     }
 
     @GetMapping("/main")
-    public String home(){
-        return "home.html";
+    public String main(){
+        return "main.html";
     }
 
     @GetMapping("/vacation")
@@ -37,4 +37,5 @@ public class FrontController {
             return "vacation.html";
         }
     }
+
 }
