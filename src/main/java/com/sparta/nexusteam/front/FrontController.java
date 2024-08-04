@@ -23,9 +23,9 @@ public class FrontController {
         return "signup.html";
     }
 
-    @GetMapping("/main")
-    public String main(){
-        return "main.html";
+    @GetMapping("/home")
+    public String home(){
+        return "home.html";
     }
 
     @GetMapping("/vacation")
