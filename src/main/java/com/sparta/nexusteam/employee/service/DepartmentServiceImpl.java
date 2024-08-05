@@ -39,8 +39,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             put = @CachePut(value = "department", key = "#result.id"),
             evict = @CacheEvict(value = "departments", key = "#employee.company.id")
     )*/
-    public Department createDepartment(Department department, Employee employee) {
-        if (departmentRepository.existsByNameAndCompany(department.getName(), employee.getCompany())) {
+    public Department createDepartment(String departmentName, Employee employee) {
+        if (departmentRepository.existsByNameAndCompany(departmentName, employee.getCompany())) {
             throw new IllegalArgumentException("이미 존재하는 이름입니다");
         }
 
@@ -48,9 +48,13 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new AccessDeniedException("권한이 없습니다");
         }
 
+        Department department = new Department();
+        department.setName(departmentName);
         department.setCompany(employee.getCompany());
 
-        return departmentRepository.save(department);
+        departmentRepository.save(department);
+
+        return department;
     }
 
     @Override
