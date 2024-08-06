@@ -46,7 +46,7 @@ public class Vacation {
     private Employee employee;
 
     public Vacation(LocalDateTime startDate, LocalDateTime endDate, VacationType vacationType,
-            Employee employee) {
+                    Employee employee) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.approvalStatus = ApprovalStatus.PENDING;

@@ -60,9 +60,9 @@ public class VacationController {
      */
     @PostMapping("/vacation-type/{vacationTypeId}/vacation")
     public ResponseEntity<CommonResponse> createVacation(@PathVariable Long vacationTypeId,
-            @Valid @RequestBody PostVacationRequest requestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            BindingResult bindingResult) {
+                                                         @Valid @RequestBody PostVacationRequest requestDto,
+                                                         @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return getFieldErrorResponseEntity(bindingResult, "휴가 등록 실패");
         }

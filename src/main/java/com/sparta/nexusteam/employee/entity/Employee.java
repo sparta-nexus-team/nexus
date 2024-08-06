@@ -91,13 +91,13 @@ public class Employee {
         refreshToken = newRefreshToken;
     }
 
-    public void updateProfile(EmployeeRequest request) {
+    public void updateProfile(EmployeeRequest request, Position position, Department department, UserRole role) {
         userName = request.getUserName();
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
-        position = request.getPosition();
-        department = request.getDepartment();
-        role = request.getRole();
+        this.position = position;
+        this.role = role;
+        this.department = department;
     }
 }

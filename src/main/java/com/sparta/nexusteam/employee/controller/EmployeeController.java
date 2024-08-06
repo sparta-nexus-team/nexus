@@ -61,6 +61,13 @@ public class EmployeeController {
         }
     }
 
+    @GetMapping("/api/permission")
+    public boolean isManger(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        return employeeServiceImpl.isManger(userDetails.getEmployee());
+    }
+
     @PostMapping("/employee/invite")
     public ResponseEntity<CommonResponse> inviteEmployee( //사원 초대
             @RequestParam("email") String email,
@@ -69,21 +76,6 @@ public class EmployeeController {
         try{
             String response = employeeServiceImpl.inviteEmployee(email, userDetails.getEmployee());
             return getResponseEntity(response, "초대 성공");
-        } catch (Exception e) {
-            return getBadRequestResponseEntity(e);
-        }
-    }
-
-    @GetMapping("/employee/registerEmployee")
-    public ResponseEntity<CommonResponse> confirmInvitation( //초대링크 유효성 검사
-            @RequestParam("token") String token
-    ) {
-        try{
-            Invitation invitation = invitationRepository.findByToken(token);
-            if (invitation == null) {
-                throw new Exception("Invalid token");
-            }
-            return getResponseEntity(invitation, "초대 토큰 유효");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
@@ -202,15 +194,11 @@ public class EmployeeController {
 
     @PostMapping("/employee/departments")
     public ResponseEntity<CommonResponse> createDepartment( // 부서 생성
-            @Valid @RequestBody Department department,
-            BindingResult bindingResult,
+            @RequestBody String departmentName,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        if (bindingResult.hasErrors()) {
-            return getFieldErrorResponseEntity(bindingResult, "부서 추가 실패");
-        }
         try{
-            Department response = departmentServiceImpl.createDepartment(department, userDetails.getEmployee());
+            Department response = departmentServiceImpl.createDepartment(departmentName, userDetails.getEmployee());
             return getResponseEntity(response, "부서 추가 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -220,13 +208,9 @@ public class EmployeeController {
     @PutMapping("/employee/departments/{id}")
     public ResponseEntity<CommonResponse> updateDepartment( // 부서 이름 변경
             @PathVariable Long id,
-            @Valid @RequestBody Department departmentDetails,
-            BindingResult bindingResult,
+            @RequestBody Department departmentDetails,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        if (bindingResult.hasErrors()) {
-            return getFieldErrorResponseEntity(bindingResult, "부서 수정 실패");
-        }
         try{
             Department response = departmentServiceImpl.updateDepartment(id, departmentDetails, userDetails.getEmployee());
             return getResponseEntity(response, "부서 수정 성공");

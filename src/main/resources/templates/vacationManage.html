@@ -21,418 +21,277 @@
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="#">Nexus.team</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="#">Nexus.team</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">구성원</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">급여</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">근무</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">휴가</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="me-3" th:text="${userName}"></span>
-                <a class="btn btn-outline-danger" href="/logout">로그아웃</a>
-            </div>
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="employeeListBtn">구성원</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">급여</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">근무</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">휴가</a>
+                </li>
+            </ul>
         </div>
-    </nav>
+        <div class="d-flex align-items-center">
+            <span class="me-3" th:text="${userName}"></span>
+            <a class="btn btn-outline-danger" href="/logout">로그아웃</a>
+        </div>
+    </div>
+</nav>
 
-    <!-- Main Content -->
-    <div class="container mt-5">
+<!-- Main Content -->
+<div class="container mt-5">
 
-        <h3>휴가 관리</h3>
+    <h3>휴가 관리</h3>
 
-        <!-- 휴가 종류 관리 섹션 -->
+    <!-- 휴가 종류 관리 섹션 -->
 
 
-        <h5 style="margin-top:40px;">휴가 종류 관리</h5>
+    <h5 style="margin-top:40px;">휴가 종류 관리</h5>
 
-        <div style="margin-top:10px;" class="row row-cols-1 row-cols-md-4 g-4" id="card-container">
+    <div style="margin-top:10px;" class="row row-cols-1 row-cols-md-4 g-4" id="card-container">
+    </div>
+
+
+    <!--휴가 승인 섹션-->
+    <div>
+        <h5 style="margin-top:40px;">휴가 승인 관리</h5>
+        <div id="vacation-approval-container">
+        </div>
+    </div>
+
+    <!-- 휴가 종류 추가 Offcanvas -->
+    <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacation-type-add-offcanvas"
+         aria-labelledby="vacationTypeLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="vacationTypeLabel">휴가 종류 추가</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="mb-3">
+            <div><label for="vacation-type-name">휴가 종류 이름:</label>
+                <input type="text" id="vacation-type-add-name">
+            </div>
+
+            <label for="vacation-type-days">휴가 종류 일수:</label>
+            <input type="number" id="vacation-type-add-days" min="0.5" step="0.5">
+        </div>
+        <button type="button" id="vacation-type-add-button" class="btn btn-secondary">휴가 종류 추가</button>
+        <span id="check"></span>
+    </div>
+
+    <!-- 휴가 종류 수정 Offcanvas -->
+    <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="offcanvasRight"
+         aria-labelledby="vacationTypeLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="vacationTypeLabel">휴가 종류 수정</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="mb-3">
+            <div><label for="vacation-type-name">휴가 종류 이름:</label>
+                <input type="text" id="vacation-type-upd-name">
+            </div>
+
+            <label for="vacation-type-days">휴가 종류 일수:</label>
+            <input type="number" id="vacation-type-upd-days" min="0.5" step="0.5">
+        </div>
+        <button type="button" id="vacation-type-update-button" class="btn btn-secondary">휴가 종류 수정</button>
+        <span id="check"></span>
+    </div>
+
+    <!--휴가 정보 Offcanvas-->
+    <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacationInfo"
+         aria-labelledby="vacationInfoLabel">
+        <div class="offcanvas-header mb-5">
+            <h5 class="offcanvas-title" id="vacationInfoLabel"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
 
+        <div class="mb-3">
+            <h6 id="offc-vacation-type"></h6>
+        </div>
 
-        <!--휴가 승인 섹션-->
+        <div class="mb-3">
+            <h6 id="offc-vacation-start-date"></h6>
+        </div>
+
+        <div class="mb-3">
+            <h6 id="offc-vacation-end-date" d></h6>
+        </div>
+
+        <div class="mb-3">
+            <h6 id="offc-vacation-approval" d></h6>
+        </div>
+
         <div>
-            <h5 style="margin-top:40px;">휴가 승인 관리</h5>
-            <div id="vacation-approval-container">
-            </div>
+            <button id="approve-button" type="button" class="btn btn-light">휴가 승인</button>
+            <button id="reject-button" type="button" class="btn btn-light">휴가 거절</button>
         </div>
-
-        <!-- 휴가 종류 추가 Offcanvas -->
-        <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacation-type-add-offcanvas"
-            aria-labelledby="vacationTypeAddLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="vacationTypeAddLabel">휴가 종류 추가</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="mb-3">
-                <div><label for="vacation-type-add-name">휴가 종류 이름:</label>
-                    <input type="text" id="vacation-type-add-name">
-                </div>
-
-                <label for="vacation-type-add-days">휴가 종류 일수:</label>
-                <input type="number" id="vacation-type-add-days" min="0.5" step="0.5">
-            </div>
-            <button type="button" id="vacation-type-add-button" class="btn btn-secondary">휴가 종류 추가</button>
-        </div>
-
-        <!-- 휴가 종류 수정 Offcanvas -->
-        <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="offcanvasRight"
-            aria-labelledby="vacationTypeUpdateLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="vacationTypeUpdateLabel">휴가 종류 수정</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="mb-3">
-                <div><label for="vacation-type-upd-name">휴가 종류 이름:</label>
-                    <input type="text" id="vacation-type-upd-name">
-                </div>
-
-                <label for="vacation-type-upd-days">휴가 종류 일수:</label>
-                <input type="number" id="vacation-type-upd-days" min="0.5" step="0.5">
-            </div>
-            <button type="button" id="vacation-type-update-button" class="btn btn-secondary">휴가 종류 수정</button>
-        </div>
-
-        <!--휴가 정보 Offcanvas-->
-        <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacationInfo"
-            aria-labelledby="vacationInfoLabel">
-            <div class="offcanvas-header mb-5">
-                <h5 class="offcanvas-title" id="vacationInfoLabel"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-
-            <div class="mb-3">
-                <h6 id="offc-vacation-type"></h6>
-            </div>
-
-            <div class="mb-3">
-                <h6 id="offc-vacation-start-date"></h6>
-            </div>
-
-            <div class="mb-3">
-                <h6 id="offc-vacation-end-date" d></h6>
-            </div>
-
-            <div class="mb-3">
-                <h6 id="offc-vacation-approval" d></h6>
-            </div>
-
-            <div>
-                <button id="approve-button" type="button" class="btn btn-light">휴가 승인</button>
-                <button id="reject-button" type="button" class="btn btn-light">휴가 거절</button>
-            </div>
-
-        </div>
-
-
 
     </div>
 
 
-    <script>
-        function addCard(vacationType, dataContainer) {
-            // 카드의 col div 생성
-            function addCard() {
 
-            }
-            let colDiv = document.createElement('div');
-            colDiv.className = 'col';
-
-            // 카드의 card div 생성
-            let cardDiv = document.createElement('div');
-            cardDiv.className = 'card btn';
-            cardDiv.style.width = '18rem';
-
-            // 카드의 card-body div 생성
-            let cardBodyDiv = document.createElement('div');
-            cardBodyDiv.className = 'card-body';
+</div>
 
 
-            // 카드 제목과 텍스트 생성
-            let cardTitle = document.createElement('h5');
-            cardTitle.className = 'card-title';
-            cardTitle.textContent = vacationType.name; // 카드 제목
+<script>
+    function addCard(vacationType, dataContainer) {
+        // 카드의 col div 생성
+        function addCard() {
 
-            let cardText = document.createElement('p');
-            cardText.className = 'card-text';
-            cardText.textContent = `사용가능일: ${vacationType.days}`; // 카드 내용
-
-            // 수정 버튼 생성
-            let editButton = document.createElement('button');
-            editButton.type = 'button';
-            editButton.className = 'btn btn-light';
-            editButton.textContent = '수정';
-            editButton.setAttribute('data-bs-toggle', 'offcanvas');
-            editButton.setAttribute('data-bs-target', '#offcanvasRight');
-            editButton.setAttribute('aria-controls', 'offcanvasRight');
-            editButton.id = "vacation-type-update-button";
-            // 삭제 버튼 생성
-            let deleteButton = document.createElement('button');
-            deleteButton.type = 'button';
-            deleteButton.className = 'btn btn-light';
-            deleteButton.textContent = '삭제';
-
-            // 카드 본문에 제목과 텍스트 추가
-            cardBodyDiv.appendChild(cardTitle);
-            cardBodyDiv.appendChild(cardText);
-            cardBodyDiv.appendChild(editButton);
-            cardBodyDiv.appendChild(deleteButton);
-            // 카드에 카드 본문 추가
-            cardDiv.appendChild(cardBodyDiv);
-
-            // col에 카드 추가
-            colDiv.appendChild(cardDiv);
-
-            // card-container에 col 추가
-            dataContainer.appendChild(colDiv);
-
-            editButton.addEventListener('click', function () {
-                const updateButton = document.getElementById("vacation-type-update-button");
-                updateButton.setAttribute('data-id', vacationType.id);
-                updateButton.data.id = vacationType.id;
-            });
-
-            deleteButton.addEventListener('click', function () {
-                fetch(`/vacation-type/${vacationType.id}`, {
-                    method: 'DELETE',
-                    credentials: "include"
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data);
-                        alert("카드 삭제 성공");
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error fetching data:', error);
-                    });
-            });
         }
+        let colDiv = document.createElement('div');
+        colDiv.className = 'col';
 
-        document.addEventListener('DOMContentLoaded', function () {
-            fetch('/vacation-type', {
-                method: 'GET',
-                credentials: "include"
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data)
-                    const dataContainer = document.getElementById('card-container');
-                    data.data.forEach(vacationType => {
-                        // 카드 생성
-                        addCard(vacationType, dataContainer);
-                    });
-                    //카드 추가 버튼 추가
-                    var colDiv = document.createElement('div');
-                    colDiv.className = 'col';
+        // 카드의 card div 생성
+        let cardDiv = document.createElement('div');
+        cardDiv.className = 'card btn';
+        cardDiv.style.width = '18rem';
 
-                    var cardDiv = document.createElement('div');
-                    cardDiv.className = 'card btn';
-                    cardDiv.style.width = '18rem';
-
-                    var cardBodyDiv = document.createElement('div');
-                    cardBodyDiv.className = 'card-body';
-                    cardBodyDiv.setAttribute('data-bs-toggle', 'offcanvas');
-                    cardBodyDiv.setAttribute('data-bs-target', '#vacation-type-add-offcanvas');
-                    cardBodyDiv.setAttribute('aria-controls', 'vacation-type-add-offcanvas');
+        // 카드의 card-body div 생성
+        let cardBodyDiv = document.createElement('div');
+        cardBodyDiv.className = 'card-body';
 
 
-                    var h1 = document.createElement('h1');
-                    h1.className = 'card-title';
-                    h1.style.fontWeight = 'lighter';
-                    h1.style.color = '#cccccc';
-                    h1.textContent = '+';
+        // 카드 제목과 텍스트 생성
+        let cardTitle = document.createElement('h5');
+        cardTitle.className = 'card-title';
+        cardTitle.textContent = vacationType.name; // 카드 제목
 
-                    cardBodyDiv.appendChild(h1);
-                    cardDiv.appendChild(cardBodyDiv);
-                    colDiv.appendChild(cardDiv);
-                    dataContainer.appendChild(colDiv);
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                });
+        let cardText = document.createElement('p');
+        cardText.className = 'card-text';
+        cardText.textContent = `사용가능일: ${vacationType.days}`; // 카드 내용
 
+        // 수정 버튼 생성
+        let editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn btn-light';
+        editButton.textContent = '수정';
+        editButton.setAttribute('data-bs-toggle', 'offcanvas');
+        editButton.setAttribute('data-bs-target', '#offcanvasRight');
+        editButton.setAttribute('aria-controls', 'offcanvasRight');
+        editButton.id = "vacation-type-update-button";
+        // 삭제 버튼 생성
+        let deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-light';
+        deleteButton.textContent = '삭제';
 
+        // 카드 본문에 제목과 텍스트 추가
+        cardBodyDiv.appendChild(cardTitle);
+        cardBodyDiv.appendChild(cardText);
+        cardBodyDiv.appendChild(editButton);
+        cardBodyDiv.appendChild(deleteButton);
+        // 카드에 카드 본문 추가
+        cardDiv.appendChild(cardBodyDiv);
 
+        // col에 카드 추가
+        colDiv.appendChild(cardDiv);
 
+        // card-container에 col 추가
+        dataContainer.appendChild(colDiv);
 
-
-            document.getElementById("vacation-type-add-button").addEventListener('click', function () {
-                const vacationTypename = document.getElementById('vacation-type-add-name').value;
-                const vacationTypedays = document.getElementById('vacation-type-add-days').value;
-
-                // API 요청 데이터 구성
-                const data = {
-                    name: vacationTypename,
-                    days: vacationTypedays
-                };
-
-                fetch(`/vacation-type`, {
-                    method: 'POST', // HTTP 메서드 설정
-                    headers: {
-                        'Content-Type': 'application/json' // JSON 데이터 전송
-                    },
-                    body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Success:', data);
-                        // 요청이 성공했을 때 실행할 코드
-                        if (data.statusCode == 200) {
-                            alert("휴가 종료 추가 성공!");
-                            location.reload();
-                        } else {
-                            alert("휴가 종료 추가 실패!");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                        // 에러가 발생했을 때 실행할 코드
-                        alert("휴가 종류 추가 실패");
-                    });
-            });
-
-            document.getElementById("vacation-type-update-button").addEventListener('click', function () {
-                const vacationTypename = document.getElementById('vacation-type-upd-name').value;
-                const vacationTypedays = document.getElementById('vacation-type-upd-days').value;
-
-                // API 요청 데이터 구성
-                const data = {
-                    name: vacationTypename,
-                    days: vacationTypedays
-                };
-
-                const vacationTypeId = document.getElementById("vacation-type-update-button").dataset.id;
-                fetch(`/vacation-type/${vacationTypeId}`, {
-                    method: 'PUT', // HTTP 메서드 설정
-                    headers: {
-                        'Content-Type': 'application/json' // JSON 데이터 전송
-                    },
-                    body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Success:', data);
-                        // 요청이 성공했을 때 실행할 코드
-                        if (data.statusCode == 200) {
-                            alert("휴가 종류 수정 성공!");
-                            location.reload();
-                        } else {
-                            alert("휴가 종류 수정 실패!");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                        // 에러가 발생했을 때 실행할 코드
-                        alert("휴가 종류 수정 실패");
-                    });
-            });
-
-            fetch('/vacation/approval', {
-                method: 'GET',
-                credentials: "include"
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data)
-                    const recordContainer = document.getElementById('vacation-approval-container');
-                    data.data.forEach(vacation => {
-                        // list-group 생성
-                        let listGroupDiv = document.createElement('div');
-                        listGroupDiv.className = 'list-group';
-                        listGroupDiv.style.marginTop = '20px';
-
-                        // list-group-itme 생성
-                        let item = document.createElement('a');
-                        item.className = 'list-group-item list-group-item-action';
-                        item.setAttribute('data-bs-toggle', 'offcanvas');
-                        item.setAttribute('data-bs-target', '#vacationInfo');
-                        item.setAttribute('aria-controls', 'vacationInfo');
-
-                        let VacationApprovalStatus;
-                        if (vacation.approvalStatus == 'PENDING') {
-                            VacationApprovalStatus = '승인대기'
-                        } else if (vacation.approvalStatus == 'APPROVED') {
-                            VacationApprovalStatus = '승인완료'
-                        } else if (vacation.approvalStatus == 'DENIED') {
-                            VacationApprovalStatus = '승인거절'
-                        }
-
-                        item.textContent = `${VacationApprovalStatus} ${vacation.vacationTypeName}  ${vacation.startDate}`;
-
-                        // list-group에 list-group-itme 추가
-                        listGroupDiv.appendChild(item);
-                        recordContainer.appendChild(listGroupDiv);
-
-                        // offcanvas 값 변경
-                        item.addEventListener('click', function () {
-                            const offcanvasTitle = document.getElementById('vacationInfoLabel');
-                            offcanvasTitle.textContent = `${vacation.employeeUserName}의 휴가`;
-                            const vacationType = document.getElementById('offc-vacation-type');
-                            vacationType.textContent = `휴가 종류 : ${vacation.vacationTypeName}`;
-                            const vacationStartDate = document.getElementById('offc-vacation-start-date');
-                            vacationStartDate.textContent = `휴가 시작 : ${vacation.startDate}`;
-                            const vacationEndDate = document.getElementById('offc-vacation-end-date');
-                            vacationEndDate.textContent = `휴가 종료 : ${vacation.endDate}`;
-                            const vacationApproval = document.getElementById('offc-vacation-approval');
-                            vacationApproval.textContent = `휴가 승인상태 : ${vacation.approvalStatus}`;
-                            let ab = document.getElementById("approve-button");
-                            ab.setAttribute('data-id', vacation.id);
-                            let rb = document.getElementById("reject-button");
-                            rb.setAttribute('data-id', vacation.id);
-                        }); 
-
-
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                });
-            document.getElementById("approve-button").addEventListener('click', function () {
-                let ab = document.getElementById("approve-button");
-                fetchApproval(ab.dataset.id, "APPROVED");
-            });
-
-            document.getElementById("reject-button").addEventListener('click', function () {
-                let rb = document.getElementById("reject-button");
-                fetchApproval(rb.dataset.id, "DENIED");
-            });
-
+        editButton.addEventListener('click', function () {
+            const updateButton = document.getElementById("vacation-type-update-button");
+            updateButton.setAttribute('data-id', vacationType.id);
+            updateButton.data.id = vacationType.id;
         });
 
-        function fetchApproval(vacationId, vacationApprovalStatus) {
+        deleteButton.addEventListener('click', function () {
+            fetch(`/vacation-type/${vacationType.id}`, {
+                method: 'DELETE',
+                credentials: "include"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    alert("카드 삭제 성공");
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        });
+    }
+
+    const employeeListBtn = document.getElementById('employeeListBtn');
+    employeeListBtn.addEventListener('click', async function () {
+        window.location.href = '/home';
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/vacation-type', {
+            method: 'GET',
+            credentials: "include"
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                const dataContainer = document.getElementById('card-container');
+                data.data.forEach(vacationType => {
+                    // 카드 생성
+                    addCard(vacationType, dataContainer);
+                });
+                //카드 추가 버튼 추가
+                var colDiv = document.createElement('div');
+                colDiv.className = 'col';
+
+                var cardDiv = document.createElement('div');
+                cardDiv.className = 'card btn';
+                cardDiv.style.width = '18rem';
+
+                var cardBodyDiv = document.createElement('div');
+                cardBodyDiv.className = 'card-body';
+                cardBodyDiv.setAttribute('data-bs-toggle', 'offcanvas');
+                cardBodyDiv.setAttribute('data-bs-target', '#vacation-type-add-offcanvas');
+                cardBodyDiv.setAttribute('aria-controls', 'vacation-type-add-offcanvas');
+
+
+                var h1 = document.createElement('h1');
+                h1.className = 'card-title';
+                h1.style.fontWeight = 'lighter';
+                h1.style.color = '#cccccc';
+                h1.textContent = '+';
+
+                cardBodyDiv.appendChild(h1);
+                cardDiv.appendChild(cardBodyDiv);
+                colDiv.appendChild(cardDiv);
+                dataContainer.appendChild(colDiv);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+
+
+
+
+
+        document.getElementById("vacation-type-add-button").addEventListener('click', function () {
+            const vacationTypename = document.getElementById('vacation-type-add-name').value;
+            const vacationTypedays = document.getElementById('vacation-type-add-days').value;
+
+            // API 요청 데이터 구성
             const data = {
-                approvalStatus: vacationApprovalStatus
+                name: vacationTypename,
+                days: vacationTypedays
             };
 
-            fetch(`/vacation/${vacationId}/approval`, {
-                method: 'PATCH', // HTTP 메서드 설정
+            fetch(`/vacation-type`, {
+                method: 'POST', // HTTP 메서드 설정
                 headers: {
                     'Content-Type': 'application/json' // JSON 데이터 전송
                 },
@@ -448,22 +307,170 @@
                     console.log('Success:', data);
                     // 요청이 성공했을 때 실행할 코드
                     if (data.statusCode == 200) {
-                        alert("휴가 승인or거절 성공!");
+                        alert("휴가 종료 추가 성공!");
                         location.reload();
                     } else {
-                        alert("휴가 승인or거절 실패!");
+                        alert("휴가 종료 추가 실패!");
                     }
                 })
                 .catch((error) => {
                     console.error('Error:', error);
                     // 에러가 발생했을 때 실행할 코드
-                    alert("휴가 승인or거절 실패");
+                    alert("휴가 종류 추가 실패");
                 });
-        }
-    </script>
+        });
+
+        document.getElementById("vacation-type-update-button").addEventListener('click', function () {
+            const vacationTypename = document.getElementById('vacation-type-upd-name').value;
+            const vacationTypedays = document.getElementById('vacation-type-upd-days').value;
+
+            // API 요청 데이터 구성
+            const data = {
+                name: vacationTypename,
+                days: vacationTypedays
+            };
+
+            const vacationTypeId = document.getElementById("vacation-type-update-button").dataset.id;
+            fetch(`/vacation-type/${vacationTypeId}`, {
+                method: 'PUT', // HTTP 메서드 설정
+                headers: {
+                    'Content-Type': 'application/json' // JSON 데이터 전송
+                },
+                body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    // 요청이 성공했을 때 실행할 코드
+                    if (data.statusCode == 200) {
+                        alert("휴가 종류 수정 성공!");
+                        location.reload();
+                    } else {
+                        alert("휴가 종류 수정 실패!");
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    // 에러가 발생했을 때 실행할 코드
+                    alert("휴가 종류 수정 실패");
+                });
+        });
+
+        fetch('/vacation/approval', {
+            method: 'GET',
+            credentials: "include"
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                const recordContainer = document.getElementById('vacation-approval-container');
+                data.data.forEach(vacation => {
+                    // list-group 생성
+                    let listGroupDiv = document.createElement('div');
+                    listGroupDiv.className = 'list-group';
+                    listGroupDiv.style.marginTop = '20px';
+
+                    // list-group-itme 생성
+                    let item = document.createElement('a');
+                    item.className = 'list-group-item list-group-item-action';
+                    item.setAttribute('data-bs-toggle', 'offcanvas');
+                    item.setAttribute('data-bs-target', '#vacationInfo');
+                    item.setAttribute('aria-controls', 'vacationInfo');
+
+                    let VacationApprovalStatus;
+                    if (vacation.approvalStatus == 'PENDING') {
+                        VacationApprovalStatus = '승인대기'
+                    } else if (vacation.approvalStatus == 'APPROVED') {
+                        VacationApprovalStatus = '승인완료'
+                    } else if (vacation.approvalStatus == 'DENIED') {
+                        VacationApprovalStatus = '승인거절'
+                    }
+
+                    item.textContent = `${VacationApprovalStatus} ${vacation.vacationTypeName}  ${vacation.startDate}`;
+
+                    // list-group에 list-group-itme 추가
+                    listGroupDiv.appendChild(item);
+                    recordContainer.appendChild(listGroupDiv);
+
+                    // offcanvas 값 변경
+                    item.addEventListener('click', function () {
+                        const offcanvasTitle = document.getElementById('vacationInfoLabel');
+                        offcanvasTitle.textContent = `${vacation.employeeUserName}의 휴가`;
+                        const vacationType = document.getElementById('offc-vacation-type');
+                        vacationType.textContent = `휴가 종류 : ${vacation.vacationTypeName}`;
+                        const vacationStartDate = document.getElementById('offc-vacation-start-date');
+                        vacationStartDate.textContent = `휴가 시작 : ${vacation.startDate}`;
+                        const vacationEndDate = document.getElementById('offc-vacation-end-date');
+                        vacationEndDate.textContent = `휴가 종료 : ${vacation.endDate}`;
+                        const vacationApproval = document.getElementById('offc-vacation-approval');
+                        vacationApproval.textContent = `휴가 승인상태 : ${vacation.approvalStatus}`;
+                        let ab = document.getElementById("approve-button");
+                        ab.setAttribute('data-id', vacation.id);
+                        let rb = document.getElementById("reject-button");
+                        rb.setAttribute('data-id', vacation.id);
+                    });
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        document.getElementById("approve-button").addEventListener('click', function () {
+            let ab = document.getElementById("approve-button");
+            fetchApproval(ab.dataset.id, "APPROVED");
+        });
+
+        document.getElementById("reject-button").addEventListener('click', function () {
+            let rb = document.getElementById("reject-button");
+            fetchApproval(rb.dataset.id, "DENIED");
+        });
+
+    });
+
+    function fetchApproval(vacationId, vacationApprovalStatus) {
+        const data = {
+            approvalStatus: vacationApprovalStatus
+        };
+
+        fetch(`/vacation/${vacationId}/approval`, {
+            method: 'PATCH', // HTTP 메서드 설정
+            headers: {
+                'Content-Type': 'application/json' // JSON 데이터 전송
+            },
+            body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                // 요청이 성공했을 때 실행할 코드
+                if (data.statusCode == 200) {
+                    alert("휴가 승인or거절 성공!");
+                    location.reload();
+                } else {
+                    alert("휴가 승인or거절 실패!");
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                // 에러가 발생했을 때 실행할 코드
+                alert("휴가 승인or거절 실패");
+            });
+    }
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

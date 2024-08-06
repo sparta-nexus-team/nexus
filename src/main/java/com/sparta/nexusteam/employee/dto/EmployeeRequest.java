@@ -11,7 +11,7 @@ public class EmployeeRequest {
     private String email;
     private String phoneNumber;
     private String address;
-    private Position position;
-    private Department department;
-    private UserRole role;
+    private String position;
+    private String department;
+    private String role;
 }

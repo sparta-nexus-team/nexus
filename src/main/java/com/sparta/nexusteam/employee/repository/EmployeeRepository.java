@@ -3,6 +3,7 @@ package com.sparta.nexusteam.employee.repository;
 import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByDepartmentNameAndCompany(String departmentName, Company company);
 
+    @Query("SELECT e FROM Employee e WHERE e.userName LIKE %:username% AND e.company = :company")
     List<Employee> findByUserNameAndCompany(String username, Company company);
 
     List<Employee> findAllByCompany(Company company);
