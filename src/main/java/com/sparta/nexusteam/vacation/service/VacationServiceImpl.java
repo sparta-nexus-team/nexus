@@ -14,6 +14,7 @@ import com.sparta.nexusteam.vacation.entity.Vacation;
 import com.sparta.nexusteam.vacation.entity.VacationType;
 import com.sparta.nexusteam.vacation.repository.VacationRepository;
 import com.sparta.nexusteam.vacation.repository.VacationTypeRepository;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,12 @@ public class VacationServiceImpl implements VacationService {
                                            Employee employee) {
         VacationType vacationType = vacationTypeRepository.findById(vacationTypeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가 종류가 없습니다."));
+        if(requestDto.getStartDate().isAfter(requestDto.getEndDate())) {
+            throw new IllegalArgumentException("시작일시는 종료일시 보다 이르면 안됩니다.");
+        }
+        if(vacationType.getDays()*24 < Duration.between(requestDto.getStartDate(), requestDto.getEndDate()).toHours()) {
+            throw new IllegalArgumentException(("시작일시와 종료일시의 차이는 휴가 종류 일수보다 크면 안 됩니다."));
+        }
         Vacation vacation = new Vacation(requestDto.getStartDate(), requestDto.getEndDate(),
                 vacationType, employee);
         vacation = vacationRepository.save(vacation);
