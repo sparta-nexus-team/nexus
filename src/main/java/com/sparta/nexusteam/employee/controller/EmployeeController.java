@@ -81,21 +81,6 @@ public class EmployeeController {
         }
     }
 
-    @GetMapping("/employee/registerEmployee")
-    public ResponseEntity<CommonResponse> confirmInvitation( //초대링크 유효성 검사
-            @RequestParam("token") String token
-    ) {
-        try{
-            Invitation invitation = invitationRepository.findByToken(token);
-            if (invitation == null) {
-                throw new Exception("Invalid token");
-            }
-            return getResponseEntity(invitation, "초대 토큰 유효");
-        } catch (Exception e) {
-            return getBadRequestResponseEntity(e);
-        }
-    }
-
     @PostMapping("/employee/setNewEmployee")
     public ResponseEntity<CommonResponse> setNewEmployee( //초대링크 기반 가입
             @RequestParam("token") String token,
@@ -209,11 +194,11 @@ public class EmployeeController {
 
     @PostMapping("/employee/departments")
     public ResponseEntity<CommonResponse> createDepartment( // 부서 생성
-            @RequestBody Department department,
+            @RequestBody String departmentName,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         try{
-            Department response = departmentServiceImpl.createDepartment(department, userDetails.getEmployee());
+            Department response = departmentServiceImpl.createDepartment(departmentName, userDetails.getEmployee());
             return getResponseEntity(response, "부서 추가 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);

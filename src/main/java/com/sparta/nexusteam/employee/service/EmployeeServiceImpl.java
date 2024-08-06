@@ -6,14 +6,15 @@ import com.sparta.nexusteam.employee.repository.CompanyRepository;
 import com.sparta.nexusteam.employee.repository.DepartmentRepository;
 import com.sparta.nexusteam.employee.repository.EmployeeRepository;
 import com.sparta.nexusteam.employee.repository.InvitationRepository;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -216,15 +217,23 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private String sendInvitationEmail(String email, String token) {
         String subject = "Employee Invitation";
-        String confirmationUrl = "/employee/registerEmployee?token=" + token;
-        String message = "Click the link to register: " + confirmationUrl + "\n";
+        // 등록 양식 페이지 URL (예: 사용자 등록 페이지)
+        String confirmationUrl = "http://yourdomain.com/employee/registerEmployee?token=" + token;
+        String message = "<html>" +
+                "<body>" +
+                "<h2>Welcome!</h2>" +
+                "<p>Please click the link below to register:</p>" +
+                "<a href='" + confirmationUrl + "'>Register Here</a>" +
+                "</body>" +
+                "</html>";
 
         try {
-            SimpleMailMessage emailMessage = new SimpleMailMessage();
-            emailMessage.setTo(email);
-            emailMessage.setSubject(subject);
-            emailMessage.setText(message);
-            mailSender.send(emailMessage);
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+            helper.setTo(email);
+            helper.setSubject(subject);
+            helper.setText(message, true); // HTML 형식 메시지
+            mailSender.send(mimeMessage);
             return "Invitation email sent successfully.";
         } catch (Exception e) {
             throw new RuntimeException("전송 실패");

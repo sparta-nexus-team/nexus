@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface DepartmentService {
     List<DepartmentResponse> getAllDepartments(Employee employee);
-    Department createDepartment(Department department, Employee employee);
+    Department createDepartment(String departmentName, Employee employee);
     Department updateDepartment(Long id, Department departmentDetails, Employee employee);
     Long deleteDepartment(Long id, Employee employee);
 }

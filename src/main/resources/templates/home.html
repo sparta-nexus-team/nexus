@@ -617,8 +617,8 @@
         }
 
         async function createDepartment() {
-            const newName = prompt("Enter the name of the new department:");
-            if (newName) {
+            const departmentName = prompt("Enter the name of the new department:");
+            if (departmentName) {
                 try {
                     const response = await fetch('/employee/departments', {
                         method: 'POST',
@@ -626,7 +626,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${localStorage.getItem('Authorization')}`
                         },
-                        body: JSON.stringify({ name: newName })
+                        body: departmentName,
                     });
 
                     if (!response.ok) {
