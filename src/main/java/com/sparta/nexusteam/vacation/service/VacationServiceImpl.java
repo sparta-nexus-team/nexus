@@ -119,6 +119,9 @@ public class VacationServiceImpl implements VacationService {
     public void deleteVacation(Long vacationId) {
         Vacation vacation = vacationRepository.findById(vacationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가는 없습니다."));
+        if(vacation.getEndDate().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("사용한 휴가는 삭제 할수 없습니다.");
+        }
         vacationRepository.delete(vacation);
     }
 
@@ -139,4 +142,7 @@ public class VacationServiceImpl implements VacationService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가 종류는 없습니다."));
         vacationTypeRepository.delete(vacationType);
     }
+
+
+
 }
