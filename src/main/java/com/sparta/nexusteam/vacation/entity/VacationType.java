@@ -39,8 +39,7 @@ public class VacationType {
     @ManyToOne
     private Company company;
 
-    @OneToMany(mappedBy = "vacationType",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vacation> vacations;
+    private boolean isDeleted = false;
 
     public VacationType(String name, int days, Company company) {
         this.name = name;
@@ -51,5 +50,9 @@ public class VacationType {
     public void updateVacationType(PutVacationTypeRequest requestDto) {
         this.name=requestDto.getName();
         this.days=requestDto.getDays();
+    }
+
+    public void softDelete(){
+        this.isDeleted = true;
     }
 }
