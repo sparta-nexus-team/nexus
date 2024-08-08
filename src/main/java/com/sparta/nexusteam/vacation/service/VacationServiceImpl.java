@@ -3,6 +3,7 @@ package com.sparta.nexusteam.vacation.service;
 import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.employee.repository.CompanyRepository;
+import com.sparta.nexusteam.vacation.dto.AnnualLeaveResponseDto;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
@@ -17,7 +18,9 @@ import com.sparta.nexusteam.vacation.repository.VacationRepository;
 import com.sparta.nexusteam.vacation.repository.VacationTypeHistoryRepository;
 import com.sparta.nexusteam.vacation.repository.VacationTypeRepository;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -155,4 +158,22 @@ public class VacationServiceImpl implements VacationService {
     }
 
 
+    public AnnualLeaveResponseDto getAnnualLeave(Employee employee) {
+        Period hirePeriod = Period.between(employee.getHireDate(), LocalDate.now());
+        int totalAnnualLeave;
+        int usedAnnualLeave;
+        int remainingAnnualLeave;
+        //총 연차 지급일 계산
+        if(hirePeriod.getYears()<1) {
+          totalAnnualLeave = hirePeriod.getMonths();
+        } else {
+            totalAnnualLeave = 15+(hirePeriod.getYears()-1)/2;
+        }
+        //유효 연차 사용일 계산
+        LocalDate AnnualLeaveGrantDate = employee.getHireDate().plusYears(hirePeriod.getYears());
+//        usedAnnualLeave = vacationRepository.findByStartDate
+
+        //남은 연차 계산
+        return new AnnualLeaveResponseDto();
+    }
 }
