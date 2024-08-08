@@ -29,7 +29,7 @@ public class VacationType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length=15, nullable = false, unique = true)
+    @Column(length=15, nullable = false)
     private String name;
 
     @Column(nullable = false)
