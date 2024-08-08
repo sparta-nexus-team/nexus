@@ -6,7 +6,9 @@ import static com.sparta.nexusteam.base.ControllerUtil.getFieldErrorResponseEnti
 import static com.sparta.nexusteam.base.ControllerUtil.getResponseEntity;
 
 import com.sparta.nexusteam.base.CommonResponse;
+import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.security.UserDetailsImpl;
+import com.sparta.nexusteam.vacation.dto.AnnualLeaveResponseDto;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
