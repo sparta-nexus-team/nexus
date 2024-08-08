@@ -1,8 +1,11 @@
 package com.sparta.nexusteam.employee.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.time.LocalDate;
 import lombok.Data;
 
 @Data
@@ -27,4 +30,8 @@ public class InviteSignupRequest {
 
     @NotBlank(message = "주소는 빈칸이 될 수 없습니다")
     private String address;
+
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate hireDate;
 }
