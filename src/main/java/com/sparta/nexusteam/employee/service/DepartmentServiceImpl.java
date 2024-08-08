@@ -54,7 +54,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         departmentRepository.save(department);
 
-        return department;
+        return null;
     }
 
     @Override

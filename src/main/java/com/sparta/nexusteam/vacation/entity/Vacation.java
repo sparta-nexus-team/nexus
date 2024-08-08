@@ -37,20 +37,20 @@ public class Vacation {
     @Column(name = "approval_status", nullable = false)
     private ApprovalStatus approvalStatus;
 
-    @JoinColumn(name = "vacation_type_id", nullable = false)
+    @JoinColumn(name="vacation_type_history_id",nullable = false)
     @ManyToOne
-    private VacationType vacationType;
+    private VacationTypeHistory vacationTypeHistory;
 
-    @JoinColumn(name = "employee_id", nullable = false)
+    @JoinColumn(name="employee_id",nullable = false)
     @ManyToOne
     private Employee employee;
 
-    public Vacation(LocalDateTime startDate, LocalDateTime endDate, VacationType vacationType,
+    public Vacation(LocalDateTime startDate, LocalDateTime endDate, VacationTypeHistory vacationTypeHistory,
                     Employee employee) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.approvalStatus = ApprovalStatus.PENDING;
-        this.vacationType = vacationType;
+        this.vacationTypeHistory = vacationTypeHistory;
         this.employee = employee;
     }
 

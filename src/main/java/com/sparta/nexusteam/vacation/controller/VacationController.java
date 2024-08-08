@@ -6,6 +6,7 @@ import static com.sparta.nexusteam.base.ControllerUtil.getFieldErrorResponseEnti
 import static com.sparta.nexusteam.base.ControllerUtil.getResponseEntity;
 
 import com.sparta.nexusteam.base.CommonResponse;
+import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.security.UserDetailsImpl;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
@@ -155,14 +156,15 @@ public class VacationController {
     public ResponseEntity<CommonResponse> updateVacationApprovalStatus(
             @PathVariable Long vacationId,
             @Valid @RequestBody PatchVacationApprovalRequest requestDto,
-            BindingResult bindingResult) {
+            BindingResult bindingResult, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         if (bindingResult.hasErrors()) {
             return getFieldErrorResponseEntity(bindingResult, "휴가 승인/거절 실패");
         }
         try {
-            VacationResponse responseDto = vacationServiceImpl.updateVacationApprovalStatus(
-                    vacationId,
-                    requestDto);
+            if (!userDetails.getEmployee().getRole().equals(UserRole.MANAGER)) {
+                throw new IllegalArgumentException("휴가 승인은 관리자만 할 수 있습니다.");
+            }
+            VacationResponse responseDto = vacationServiceImpl.updateVacationApprovalStatus(vacationId, requestDto);
             return getResponseEntity(responseDto, "휴가 승인/거절 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -181,6 +183,7 @@ public class VacationController {
             return getBadRequestResponseEntity(e);
         }
     }
+
     /**
      * 휴가 종류 삭제
      */
@@ -193,6 +196,7 @@ public class VacationController {
             return getBadRequestResponseEntity(e);
         }
     }
+
     /**
      * 휴가 종류 수정
      */

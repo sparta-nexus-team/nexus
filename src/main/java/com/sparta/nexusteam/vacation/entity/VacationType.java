@@ -29,7 +29,7 @@ public class VacationType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length=15, nullable = false)
+    @Column(length=15, nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)
@@ -39,8 +39,7 @@ public class VacationType {
     @ManyToOne
     private Company company;
 
-    @OneToMany(mappedBy = "vacationType",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vacation> vacations;
+    private boolean isDeleted = false;
 
     public VacationType(String name, int days, Company company) {
         this.name = name;
@@ -51,5 +50,9 @@ public class VacationType {
     public void updateVacationType(PutVacationTypeRequest requestDto) {
         this.name=requestDto.getName();
         this.days=requestDto.getDays();
+    }
+
+    public void softDelete(){
+        this.isDeleted = true;
     }
 }

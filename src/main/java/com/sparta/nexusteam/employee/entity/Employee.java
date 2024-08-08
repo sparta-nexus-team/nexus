@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,6 +59,8 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     private Department department;
 
+    private LocalDate hireDate;
+
     @ManyToOne
     private Company company;
 
@@ -81,6 +84,7 @@ public class Employee {
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
+        hireDate = request.getHireDate();
         this.position = position;
         this.role = role;
         this.company = company;
