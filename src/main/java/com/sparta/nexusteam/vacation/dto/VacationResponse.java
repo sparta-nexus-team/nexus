@@ -23,8 +23,8 @@ public class VacationResponse {
 
     public VacationResponse(Vacation vacation) {
         this.id = vacation.getId();
-        this.vacationTypeName = vacation.getVacationType().getName();
-        this.vacationTypeDays = vacation.getVacationType().getDays();
+        this.vacationTypeName = vacation.getVacationTypeHistory().getName();
+        this.vacationTypeDays = vacation.getVacationTypeHistory().getDays();
         this.employeeUserName = vacation.getEmployee().getUserName();
         this.startDate = vacation.getStartDate();
         this.endDate = vacation.getEndDate();
