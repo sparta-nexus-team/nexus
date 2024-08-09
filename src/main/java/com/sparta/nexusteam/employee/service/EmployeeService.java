@@ -18,5 +18,5 @@ public interface EmployeeService {
     Long deleteEmployee(Long id, Employee employeeDetail);
     List<EmployeeResponse> getEmployeesByDepartment(String departmentName, Employee employee);
     List<EmployeeResponse> getEmployeesByUserName(String userName, Employee employeeDetail);
-    boolean isManger(Employee employee);
+    String getEmployeeRole(Employee employee);
 }

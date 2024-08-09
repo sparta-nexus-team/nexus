@@ -58,7 +58,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         departmentRepository.save(department);
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,UserRole.MANAGER, company, department);
+        Employee employee = new Employee(request,encodedPassword, Position.CHAIRMAN ,UserRole.ADMIN, company, department);
 
         employeeRepository.save(employee);
 
@@ -170,13 +170,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 근로자 입니다." + id));
 
-        if(!UserRole.MANAGER.equals(employeeDetail.getRole())){
+        if(UserRole.USER.equals(employeeDetail.getRole())){
             throw new AccessDeniedException("권한이 없습니다");
         }
 
         // 열거형과 객체 매핑
         Position position = Position.valueOf(request.getPosition());
-        UserRole role = UserRole.valueOf(request.getRole());
+
+        UserRole role = null;
+        if(UserRole.ADMIN.equals(employeeDetail.getRole())) {
+            role = UserRole.valueOf(request.getRole());
+        } else if(UserRole.MANAGER.equals(employeeDetail.getRole())) {
+            role = employee.getRole();
+        }
 
         // 부서 매핑 - 부서 이름으로 Department 객체 조회
         Department department = departmentRepository.findByNameAndCompany(request.getDepartment(), employeeDetail.getCompany());
@@ -211,8 +217,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public boolean isManger(Employee employee) {
-        return UserRole.MANAGER.equals(employee.getRole());
+    public String getEmployeeRole(Employee employee) {
+        UserRole role = employee.getRole();
+        return switch (role) {
+            case ADMIN -> "ADMIN";
+            case MANAGER -> "MANAGER";
+            case USER -> "USER";
+        };
     }
 
     private String sendInvitationEmail(String email, String token) {

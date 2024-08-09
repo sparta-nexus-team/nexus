@@ -3,6 +3,7 @@ package com.sparta.nexusteam.employee.dto;
 import com.sparta.nexusteam.employee.entity.Department;
 import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.employee.entity.Position;
+import com.sparta.nexusteam.employee.entity.UserRole;
 import lombok.Data;
 
 @Data
@@ -13,6 +14,7 @@ public class EmployeeResponse {
     private String phoneNumber;
     private Position position;
     private String departmentName;
+    private UserRole role;
 
     public EmployeeResponse(Employee employee) {
         this.id = employee.getId();
@@ -21,5 +23,6 @@ public class EmployeeResponse {
         this.phoneNumber = employee.getPhoneNumber();
         this.position = employee.getPosition();
         this.departmentName = employee.getDepartment().getName();
+        this.role = employee.getRole();
     }
 }
