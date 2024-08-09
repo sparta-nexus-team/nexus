@@ -155,8 +155,8 @@
                     <div class="mb-3">
                         <label for="editRole" class="form-label">Role</label>
                         <select class="form-select" id="editRole" required>
-                            <option value="MANAGER">UserRole.MANAGER</option>
-                            <option value="USER">UserRole.USER</option>
+                            <option value="MANAGER">MANAGER</option>
+                            <option value="USER">USER</option>
                         </select>
                     </div>
                     <input type="hidden" id="editEmployeeId">
@@ -363,9 +363,23 @@
 
                 // 역할 수정 가능 여부 설정
                 const editRoleSelect = document.getElementById('editRole');
-                if (userIsManager !== "ADMIN") {
-                    editRoleSelect.disabled = true; // ADMIN만 역할 수정 가능
+                if (employeeData.role === "ADMIN") {
+                    let adminOption = editRoleSelect.querySelector('option[value="ADMIN"]');
+                    if (!adminOption) {
+                        adminOption = document.createElement('option');
+                        adminOption.value = "ADMIN";
+                        adminOption.textContent = "ADMIN";
+                        editRoleSelect.appendChild(adminOption);
+                    }
+                    editRoleSelect.disabled = true;
+                    editRoleSelect.value = "ADMIN";
+                } else if(userIsManager !== "ADMIN" ){
+                    editRoleSelect.disabled = true;
                 } else {
+                    const adminOption = editRoleSelect.querySelector('option[value="ADMIN"]');
+                    if (adminOption) {
+                        editRoleSelect.removeChild(adminOption);
+                    }
                     editRoleSelect.disabled = false;
                 }
 
@@ -373,6 +387,8 @@
                 modal.show();
             }
         }
+
+
 
         async function populateDepartmentOptions(selectedDepartment) {
             try {
