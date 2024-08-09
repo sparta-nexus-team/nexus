@@ -181,7 +181,7 @@
         const employeeListContainer = document.getElementById('employeeListContainer');
         const employeeDetailContainer = document.getElementById('employeeDetailContainer');
 
-        let userIsManager = false;
+        let userIsManager = "";
 
         try {
             userIsManager = await checkUserPermission(); // 권한 체크 결과에 따라 사용자 역할 설정
@@ -261,7 +261,7 @@
                 ${employees.map(employee => `
                     <li class="list-group-item employee-item" data-id="${employee.id}">
                         ${employee.userName} - ${employee.position} (${employee.departmentName})
-                        ${userIsManager ? `
+                        ${userIsManager === "MANAGER" || userIsManager === "ADMIN" ? `
                         <button class="btn btn-warning btn-sm edit-employee" data-id="${employee.id}">Edit</button>
                         <button class="btn btn-danger btn-sm delete-employee" data-id="${employee.id}">Delete</button>
                         ` : ''}
@@ -279,8 +279,8 @@
                 });
             });
 
-            // 메니저일 경우 수정 및 삭제 버튼 이벤트 등록
-            if (userIsManager) {
+            // 매니저일 경우 수정 및 삭제 버튼 이벤트 등록
+            if (userIsManager === "MANAGER" || userIsManager === "ADMIN") {
                 document.querySelectorAll('.edit-employee').forEach(button => {
                     button.addEventListener('click', function (event) {
                         event.stopPropagation(); // 부모 요소의 클릭 이벤트가 실행되지 않도록 방지
@@ -360,6 +360,14 @@
                 await populateDepartmentOptions(employeeData.departmentName);
                 document.getElementById('editRole').value = employeeData.role;
                 document.getElementById('editEmployeeId').value = employeeId;
+
+                // 역할 수정 가능 여부 설정
+                const editRoleSelect = document.getElementById('editRole');
+                if (userIsManager !== "ADMIN") {
+                    editRoleSelect.disabled = true; // ADMIN만 역할 수정 가능
+                } else {
+                    editRoleSelect.disabled = false;
+                }
 
                 const modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
                 modal.show();
@@ -512,7 +520,7 @@
                     fetchDepartmentMembers(dept.name);
                 });
 
-                if (userIsManager) {
+                if (userIsManager === "MANAGER" || userIsManager === "ADMIN") {
                     li.addEventListener('contextmenu', function (event) {
                         event.preventDefault();
                         showContextMenu(event, dept.id);
@@ -568,7 +576,7 @@
                 });
             });
 
-            if (userIsManager) {
+            if (userIsManager === "MANAGER" || userIsManager === "ADMIN") {
                 document.querySelectorAll('.edit-employee').forEach(button => {
                     button.addEventListener('click', function (event) {
                         event.stopPropagation(); // 부모 요소의 클릭 이벤트가 실행되지 않도록 방지
@@ -705,10 +713,10 @@
                     throw new Error('권한 정보를 가져오는 데 실패했습니다.');
                 }
 
-                return await response.json(); // 권한 체크에 따라 사용자 관리 여부 반환
+                return await response.text(); // 권한 체크에 따라 사용자 관리 여부 반환
             } catch (error) {
                 console.error('권한 확인 중 오류 발생:', error);
-                return { isManager: false };
+                return "USER";
             }
         }
 
