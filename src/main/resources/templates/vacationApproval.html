@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .custom-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .custom-container2 {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Nexus.team</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="employeeListBtn">구성원</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">급여</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">근무</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/vacation">휴가</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/vacationTypeManage">휴가관리</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/vacationApproval">휴가승인</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3" th:text="${userName}"></span>
+                <a class="btn btn-outline-danger" href="/logout">로그아웃</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+
+        <h3>휴가 관리</h3>
+
+
+        <!--휴가 승인 섹션-->
+        <div>
+            <h5 style="margin-top:40px;">휴가 승인 관리</h5>
+            <div id="vacation-approval-container">
+            </div>
+        </div>
+
+        <!--휴가 정보 Offcanvas-->
+        <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacationInfo"
+            aria-labelledby="vacationInfoLabel">
+            <div class="offcanvas-header mb-5">
+                <h5 class="offcanvas-title" id="vacationInfoLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <div class="mb-3">
+                <h6 id="offc-vacation-type"></h6>
+            </div>
+
+            <div class="mb-3">
+                <h6 id="offc-vacation-start-date"></h6>
+            </div>
+
+            <div class="mb-3">
+                <h6 id="offc-vacation-end-date" d></h6>
+            </div>
+
+            <div class="mb-3">
+                <h6 id="offc-vacation-approval" d></h6>
+            </div>
+
+            <div>
+                <button id="approve-button" type="button" class="btn btn-light">휴가 승인</button>
+                <button id="reject-button" type="button" class="btn btn-light">휴가 거절</button>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+
+    <script>
+      
+        const employeeListBtn = document.getElementById('employeeListBtn');
+        employeeListBtn.addEventListener('click', async function () {
+            window.location.href = '/home';
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            fetch('/vacation/approval', {
+                method: 'GET',
+                credentials: "include"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    const recordContainer = document.getElementById('vacation-approval-container');
+                    data.data.forEach(vacation => {
+                        // list-group 생성
+                        let listGroupDiv = document.createElement('div');
+                        listGroupDiv.className = 'list-group';
+                        listGroupDiv.style.marginTop = '20px';
+
+                        // list-group-itme 생성
+                        let item = document.createElement('a');
+                        item.className = 'list-group-item list-group-item-action';
+                        item.setAttribute('data-bs-toggle', 'offcanvas');
+                        item.setAttribute('data-bs-target', '#vacationInfo');
+                        item.setAttribute('aria-controls', 'vacationInfo');
+
+                        let VacationApprovalStatus;
+                        if (vacation.approvalStatus == 'PENDING') {
+                            VacationApprovalStatus = '승인대기'
+                        } else if (vacation.approvalStatus == 'APPROVED') {
+                            VacationApprovalStatus = '승인완료'
+                        } else if (vacation.approvalStatus == 'DENIED') {
+                            VacationApprovalStatus = '승인거절'
+                        }
+
+                        item.textContent = `${VacationApprovalStatus} ${vacation.vacationTypeName}  ${vacation.startDate}`;
+
+                        // list-group에 list-group-itme 추가
+                        listGroupDiv.appendChild(item);
+                        recordContainer.appendChild(listGroupDiv);
+
+                        // offcanvas 값 변경
+                        item.addEventListener('click', function () {
+                            const offcanvasTitle = document.getElementById('vacationInfoLabel');
+                            offcanvasTitle.textContent = `${vacation.employeeUserName}의 휴가`;
+                            const vacationType = document.getElementById('offc-vacation-type');
+                            vacationType.textContent = `휴가 종류 : ${vacation.vacationTypeName}`;
+                            const vacationStartDate = document.getElementById('offc-vacation-start-date');
+                            vacationStartDate.textContent = `휴가 시작 : ${vacation.startDate}`;
+                            const vacationEndDate = document.getElementById('offc-vacation-end-date');
+                            vacationEndDate.textContent = `휴가 종료 : ${vacation.endDate}`;
+                            const vacationApproval = document.getElementById('offc-vacation-approval');
+                            vacationApproval.textContent = `휴가 승인상태 : ${vacation.approvalStatus}`;
+                            let ab = document.getElementById("approve-button");
+                            ab.setAttribute('data-id', vacation.id);
+                            let rb = document.getElementById("reject-button");
+                            rb.setAttribute('data-id', vacation.id);
+                        });
+
+
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+            document.getElementById("approve-button").addEventListener('click', function () {
+                let ab = document.getElementById("approve-button");
+                fetchApproval(ab.dataset.id, "APPROVED");
+            });
+
+            document.getElementById("reject-button").addEventListener('click', function () {
+                let rb = document.getElementById("reject-button");
+                fetchApproval(rb.dataset.id, "DENIED");
+            });
+
+        });
+
+        function fetchApproval(vacationId, vacationApprovalStatus) {
+            const data = {
+                approvalStatus: vacationApprovalStatus
+            };
+
+            fetch(`/vacation/${vacationId}/approval`, {
+                method: 'PATCH', // HTTP 메서드 설정
+                headers: {
+                    'Content-Type': 'application/json' // JSON 데이터 전송
+                },
+                body: JSON.stringify(data) // 데이터를 JSON 문자열로 변환
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    // 요청이 성공했을 때 실행할 코드
+                    if (data.statusCode == 200) {
+                        alert("휴가 승인or거절 성공!");
+                        location.reload();
+                    } else {
+                        alert("휴가 승인or거절 실패!");
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    // 에러가 발생했을 때 실행할 코드
+                    alert("휴가 승인or거절 실패");
+                });
+        }
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
