@@ -37,7 +37,10 @@ public class Vacation {
     @Column(name = "approval_status", nullable = false)
     private ApprovalStatus approvalStatus;
 
-    @JoinColumn(name="vacation_type_history_id",nullable = false)
+    @Column(name= "annual_leave", nullable = false)
+    private Boolean isAnnualLeave;
+
+    @JoinColumn(name="vacation_type_history_id")
     @ManyToOne
     private VacationTypeHistory vacationTypeHistory;
 
@@ -52,6 +55,15 @@ public class Vacation {
         this.approvalStatus = ApprovalStatus.PENDING;
         this.vacationTypeHistory = vacationTypeHistory;
         this.employee = employee;
+        this.isAnnualLeave = false;
+    }
+
+    public Vacation(LocalDateTime startDate, LocalDateTime endDate, Employee employee) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.approvalStatus = ApprovalStatus.PENDING;
+        this.employee = employee;
+        this.isAnnualLeave = true;
     }
 
     public void updateApprovalStatus(ApprovalStatus approvalStatus) {

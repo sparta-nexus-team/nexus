@@ -8,7 +8,7 @@ import static com.sparta.nexusteam.base.ControllerUtil.getResponseEntity;
 import com.sparta.nexusteam.base.CommonResponse;
 import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.security.UserDetailsImpl;
-import com.sparta.nexusteam.vacation.dto.AnnualLeaveResponseDto;
+import com.sparta.nexusteam.vacation.dto.AnnualLeaveInfoResponse;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
@@ -223,14 +223,15 @@ public class VacationController {
     /**
      * 연차 정보 조회
      */
-    @GetMapping("/vacation/annual-Leave")
-    public ResponseEntity<CommonResponse> getAnnualVacation(
+    @GetMapping("/annual-leave")
+    public ResponseEntity<CommonResponse> getAnnualLeaveInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
-            AnnualLeaveResponseDto responseDto = vacationServiceImpl.getAnnualLeave(userDetails.getEmployee());
-            return getResponseEntity(responseDto, "휴가 종류 수정 성공");
+            AnnualLeaveInfoResponse responseDto = vacationServiceImpl.getAnnualLeaveInfo(userDetails.getEmployee());
+            return getResponseEntity(responseDto, "연차 정보 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
     }
+
 }

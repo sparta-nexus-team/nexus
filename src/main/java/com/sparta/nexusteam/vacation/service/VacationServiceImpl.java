@@ -3,7 +3,7 @@ package com.sparta.nexusteam.vacation.service;
 import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.employee.repository.CompanyRepository;
-import com.sparta.nexusteam.vacation.dto.AnnualLeaveResponseDto;
+import com.sparta.nexusteam.vacation.dto.AnnualLeaveInfoResponse;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
@@ -59,18 +59,30 @@ public class VacationServiceImpl implements VacationService {
 //    @CacheEvict(value = "vacations", key = "#employee.id")
     public VacationResponse createVacation(Long vacationTypeId, PostVacationRequest requestDto,
             Employee employee) {
-        VacationTypeHistory vacationTypeHistory = vacationTypeHistoryRepository.findTopByVacationTypeIdOrderByIdDesc(
-                        vacationTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가 종류가 없습니다."));
+        Vacation vacation;
+        Duration vacationDuration = Duration.between(requestDto.getStartDate(),
+                requestDto.getEndDate());
+        // 0이면 연차 휴가로 저장
+        if (vacationTypeId != 0) {
+            VacationTypeHistory vacationTypeHistory = vacationTypeHistoryRepository.findTopByVacationTypeIdOrderByIdDesc(
+                            vacationTypeId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가 종류가 없습니다."));
+            if (vacationTypeHistory.getDays() * 24 < vacationDuration.toHours()) {
+                throw new IllegalArgumentException(("신청시 지급일 보다 많은 휴가를 사용할 수 없습니다."));
+            }
+            vacation = new Vacation(requestDto.getStartDate(), requestDto.getEndDate(),
+                    vacationTypeHistory, employee);
+        } else {
+            if (getAnnualLeaveInfo(employee).getRemainingAnnualLeave() < vacationDuration.toDays() + (
+                    vacationDuration.toHours() % 24 / 8)) {
+                throw new IllegalArgumentException("남은 연차 보다 많은 휴가를 사용할 수 없습니다.");
+            }
+            vacation = new Vacation(requestDto.getStartDate(), requestDto.getEndDate(), employee);
+        }
+
         if (requestDto.getStartDate().isAfter(requestDto.getEndDate())) {
-            throw new IllegalArgumentException("시작일시는 종료일시 보다 이르면 안됩니다.");
+            throw new IllegalArgumentException("시작일시는 종료일시 전이여야 합니다");
         }
-        if (vacationTypeHistory.getDays() * 24 < Duration.between(requestDto.getStartDate(),
-                requestDto.getEndDate()).toHours()) {
-            throw new IllegalArgumentException(("시작일시와 종료일시의 차이는 휴가 종류 일수보다 크면 안 됩니다."));
-        }
-        Vacation vacation = new Vacation(requestDto.getStartDate(), requestDto.getEndDate(),
-                vacationTypeHistory, employee);
         vacation = vacationRepository.save(vacation);
         return new VacationResponse(vacation);
     }
@@ -110,7 +122,8 @@ public class VacationServiceImpl implements VacationService {
     @Override
 //    @Cacheable(value = "vacationTypes", key = "#companyId")
     public List<VacationTypeResponse> getVacationTypes(Long companyId) {
-        List<VacationType> vacationTypes = vacationTypeRepository.findByCompanyIdAndIsDeletedFalse(companyId);
+        List<VacationType> vacationTypes = vacationTypeRepository.findByCompanyIdAndIsDeletedFalse(
+                companyId);
         return vacationTypes.stream().map(VacationTypeResponse::new).toList();
     }
 
@@ -131,7 +144,7 @@ public class VacationServiceImpl implements VacationService {
     public void deleteVacation(Long vacationId) {
         Vacation vacation = vacationRepository.findById(vacationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 휴가는 없습니다."));
-        if (vacation.getEndDate().isAfter(LocalDateTime.now())) {
+        if (vacation.getEndDate().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("사용한 휴가는 삭제 할수 없습니다.");
         }
         vacationRepository.delete(vacation);
@@ -158,22 +171,36 @@ public class VacationServiceImpl implements VacationService {
     }
 
 
-    public AnnualLeaveResponseDto getAnnualLeave(Employee employee) {
+    public AnnualLeaveInfoResponse getAnnualLeaveInfo(Employee employee) {
+        //변수 선언
         Period hirePeriod = Period.between(employee.getHireDate(), LocalDate.now());
-        int totalAnnualLeave;
-        int usedAnnualLeave;
-        int remainingAnnualLeave;
-        //총 연차 지급일 계산
-        if(hirePeriod.getYears()<1) {
-          totalAnnualLeave = hirePeriod.getMonths();
-        } else {
-            totalAnnualLeave = 15+(hirePeriod.getYears()-1)/2;
+        float totalAnnualLeave;
+        float usedAnnualLeave = 0f;
+        float remainingAnnualLeave;
+        LocalDateTime AnnualLeaveGrantDateTime;
+        //입사 1년 미만 총 연차 및 지급일 계산
+        if (hirePeriod.getYears() < 1) {
+            totalAnnualLeave = hirePeriod.getMonths();
+            AnnualLeaveGrantDateTime = employee.getHireDate()
+                    .plusMonths(hirePeriod.getMonths()).atStartOfDay();
+        } else { //입사 1년 이상 총 연차 및 지급일 계산
+            totalAnnualLeave = 15 + (hirePeriod.getYears() - 1) / 2;
+            AnnualLeaveGrantDateTime = employee.getHireDate()
+                    .plusYears(hirePeriod.getYears()).atStartOfDay();
         }
-        //유효 연차 사용일 계산
-        LocalDate AnnualLeaveGrantDate = employee.getHireDate().plusYears(hirePeriod.getYears());
-//        usedAnnualLeave = vacationRepository.findByStartDate
+        //유효 연차 리스트 조회
+        List<Vacation> annualLeaveList = vacationRepository.findUsedAnnualLeaveAfterGrantDate(
+                AnnualLeaveGrantDateTime, employee.getId());
+        //사용한 연차 계산
+        for (Vacation annualLeave : annualLeaveList) {
+            Duration leaveDuration = Duration.between(annualLeave.getStartDate(), annualLeave.getEndDate());
+            usedAnnualLeave += leaveDuration.toDays() + ((float)leaveDuration.toHours() % 24 / 8);
+        }
 
         //남은 연차 계산
-        return new AnnualLeaveResponseDto();
+        remainingAnnualLeave = totalAnnualLeave - usedAnnualLeave;
+
+        return new AnnualLeaveInfoResponse(employee.getId(), employee.getUserName(),
+                totalAnnualLeave, usedAnnualLeave, remainingAnnualLeave);
     }
 }
