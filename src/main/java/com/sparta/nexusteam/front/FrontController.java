@@ -34,22 +34,16 @@ public class FrontController {
     @GetMapping("/vacation")
     public String vacation(){return "vacation.html";}
 
-    @GetMapping("/vacation-type-manage")
+    @GetMapping("/vacation-manage")
     public String vacationManage(@AuthenticationPrincipal UserDetailsImpl userDetails){
-        if(!userDetails.getEmployee().getRole().equals(UserRole.ADMIN)){
-            throw new RuntimeException("Admin권한만 접근 가능합니다.");
+        if(userDetails.getEmployee().getRole().equals(UserRole.ADMIN)){
+            return "vacationManageAdmin.html";
+        } else if(userDetails.getEmployee().getRole().equals(UserRole.MANAGER)){
+            return "vacationManageManager.html";
+        } else {
+           throw new RuntimeException("접근 권한이 없습니다.");
         }
-        return "vacationTypeManage.html";
     }
-
-    @GetMapping("/vacation-apporval")
-    public String vacationApproval(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        if (userDetails.getEmployee().getRole().equals(UserRole.USER)) {
-            throw new RuntimeException("ADMIN,MANAGER권한만 접근 가능합니다.");
-        }
-        return "vacationApproval.html";
-    }
-
 
     // 등록 양식 페이지 처리
     @GetMapping("/employee/registerEmployee")
