@@ -61,6 +61,7 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     private Department department;
 
+    @Column(nullable= false)
     private LocalDate hireDate;
 
     @ManyToOne
