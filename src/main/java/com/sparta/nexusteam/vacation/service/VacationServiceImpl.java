@@ -2,6 +2,7 @@ package com.sparta.nexusteam.vacation.service;
 
 import com.sparta.nexusteam.employee.entity.Company;
 import com.sparta.nexusteam.employee.entity.Employee;
+import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.employee.repository.CompanyRepository;
 import com.sparta.nexusteam.vacation.dto.AnnualLeaveInfoResponse;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
@@ -113,9 +114,13 @@ public class VacationServiceImpl implements VacationService {
 
     @Override
 //    @Cacheable(value = "pendingVacations", key = "#companyId")
-    public List<VacationResponse> getPendingVacations(Long companyId) {
-        List<Vacation> vacationList = vacationRepository.findByCompanyIdAndApprovalStatus(companyId,
-                ApprovalStatus.PENDING);
+    public List<VacationResponse> getPendingVacations(Employee employee) {
+        UserRole userRole = switch(employee.getRole()) {
+            case ADMIN -> UserRole.MANAGER;
+            default -> UserRole.USER;
+        };
+        List<Vacation> vacationList = vacationRepository.findByCompanyIdAndApprovalStatus(employee.getCompany().getId(),
+                ApprovalStatus.PENDING,userRole);
         return vacationList.stream().map(VacationResponse::new).toList();
     }
 

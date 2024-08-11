@@ -22,7 +22,7 @@ public interface VacationService {
 
     VacationResponse getVacation(Long vacationId);
 
-    List<VacationResponse> getPendingVacations(Long companyId);
+    List<VacationResponse> getPendingVacations(Employee employee);
 
     List<VacationTypeResponse> getVacationTypes(Long companyId);
 
