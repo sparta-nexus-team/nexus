@@ -2,6 +2,7 @@ package com.sparta.nexusteam.vacation.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.nexusteam.employee.entity.QEmployee;
+import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.vacation.entity.ApprovalStatus;
 import com.sparta.nexusteam.vacation.entity.QVacation;
 import com.sparta.nexusteam.vacation.entity.QVacationType;
@@ -25,13 +26,14 @@ public class VacationRepositoryCustomImpl implements VacationRepositoryCustom {
 
     @Override
     public List<Vacation> findByCompanyIdAndApprovalStatus(Long companyId,
-            ApprovalStatus approvalStatus) {
+            ApprovalStatus approvalStatus, UserRole userRole) {
 
         return queryFactory.select(vacation)
                 .from(vacation)
                 .join(vacation.employee, employee)
                 .where(employee.company.id.eq(companyId)
-                        .and(vacation.approvalStatus.eq(approvalStatus)))
+                        .and(vacation.approvalStatus.eq(approvalStatus))
+                        .and(employee.role.eq(userRole)))
                 .orderBy(vacation.startDate.asc())
                 .fetch();
     }
