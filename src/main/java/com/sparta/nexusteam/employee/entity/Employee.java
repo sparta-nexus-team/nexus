@@ -51,6 +51,8 @@ public class Employee {
     @Column(nullable = false)
     private Position position; //직급
 
+    @Column(nullable = false)
+    private double wage = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -101,12 +103,13 @@ public class Employee {
         refreshToken = newRefreshToken;
     }
 
-    public void updateProfile(EmployeeRequest request, Position position, Department department, UserRole role) {
+    public void updateProfile(EmployeeRequest request, Position position, Department department, Double wage, UserRole role) {
         userName = request.getUserName();
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
         this.position = position;
+        this.wage = wage;
         this.role = role;
         this.department = department;
     }

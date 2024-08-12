@@ -187,7 +187,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 부서 매핑 - 부서 이름으로 Department 객체 조회
         Department department = departmentRepository.findByNameAndCompany(request.getDepartment(), employeeDetail.getCompany());
 
-        employee.updateProfile(request, position, department, role);
+        employee.updateProfile(request, position, department, request.getWage() ,role);
 
         employeeRepository.save(employee);
 

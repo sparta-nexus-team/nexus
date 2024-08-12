@@ -13,5 +13,6 @@ public class EmployeeRequest {
     private String address;
     private String position;
     private String department;
+    private double wage;
     private String role;
 }
