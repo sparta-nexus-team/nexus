@@ -37,7 +37,10 @@
             <a class="nav-link" href="#">근무</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">휴가</a>
+            <a class="nav-link" href="/vacation">휴가</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/vacation-manage">휴가관리</a>
           </li>
         </ul>
       </div>
@@ -56,15 +59,15 @@
     <!-- 휴가 등록 섹션 -->
     <h5 style="margin-top:40px;">휴가 등록</h5>
     <div style="margin-top:10px;" class="row row-cols-1 row-cols-md-4 g-4" id="card-container">
-      <!-- <div class="col">
-        <div class="card btn" style="width: 18rem;">
+      <div class="col">
+        <div class="card btn" id="annual-leave-card" style="width: 18rem;">
           <div class="card-body" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
             aria-controls="offcanvasRight">
             <h5 class="card-title">연차</h5>
-            <p class="card-text">사용 가능일:</p>
+            <p class="card-text" id="remaining-annual-leave"></p>
           </div>
         </div>
-      </div> -->
+      </div>
     </div>
 
 
@@ -172,6 +175,33 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+      fetch('/annual-leave', {
+        method: 'GET',
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          const cardtext = document.getElementById('remaining-annual-leave');
+          let remainDays = Math.trunc(data.data.remainingAnnualLeave);
+          let remainTimes = (data.data.remainingAnnualLeave - Math.trunc(data.data.remainingAnnualLeave)) * 8;
+          cardtext.textContent = `남은 연차: ${remainDays}일 ${remainTimes}시간`
+
+          const cardDiv = document.getElementById("annual-leave-card");
+          cardDiv.addEventListener('click', function () {
+            const vacationAddLabel = document.getElementById('vacationAddLabel');
+            const vacationDays = document.getElementById('vacation-days');
+            vacationAddLabel.textContent = "연차";
+            vacationDays.textContent = `남은 연차: ${remainDays}일 ${remainTimes}시간`;
+            vacationAddLabel.dataset.id = 0;
+          });
+
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+
+
       //휴가 종류 카드 조회
       fetch('/vacation-type', {
         method: 'GET',
@@ -227,6 +257,8 @@
               vacationDays.textContent = `사용가능일:${vacationType.days}`;
               vacationAddLabel.dataset.id = vacationType.id;
             });
+
+
           });
 
         })
@@ -238,6 +270,9 @@
       employeeListBtn.addEventListener('click', async function () {
         window.location.href = '/home';
       });
+
+
+
 
 
       //휴가 등록 이벤트

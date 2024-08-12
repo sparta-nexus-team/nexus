@@ -32,12 +32,16 @@ public class FrontController {
     }
 
     @GetMapping("/vacation")
-    public String vacation(@AuthenticationPrincipal UserDetailsImpl userDetails){
-        if(userDetails.getEmployee().getRole().equals(UserRole.MANAGER)){
-            return "vacationManage.html";
-        }
-        else {
-            return "vacation.html";
+    public String vacation(){return "vacation.html";}
+
+    @GetMapping("/vacation-manage")
+    public String vacationManage(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        if(userDetails.getEmployee().getRole().equals(UserRole.ADMIN)){
+            return "vacationManageAdmin.html";
+        } else if(userDetails.getEmployee().getRole().equals(UserRole.MANAGER)){
+            return "vacationManageManager.html";
+        } else {
+           throw new RuntimeException("접근 권한이 없습니다.");
         }
     }
 

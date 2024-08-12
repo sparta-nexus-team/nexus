@@ -8,7 +8,7 @@ import static com.sparta.nexusteam.base.ControllerUtil.getResponseEntity;
 import com.sparta.nexusteam.base.CommonResponse;
 import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.security.UserDetailsImpl;
-import com.sparta.nexusteam.vacation.dto.AnnualLeaveResponseDto;
+import com.sparta.nexusteam.vacation.dto.AnnualLeaveInfoResponse;
 import com.sparta.nexusteam.vacation.dto.PatchVacationApprovalRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationRequest;
 import com.sparta.nexusteam.vacation.dto.PostVacationTypeRequest;
@@ -128,7 +128,7 @@ public class VacationController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
             List<VacationResponse> responseDtoList = vacationServiceImpl.getPendingVacations(
-                    userDetails.getEmployee().getCompany().getId());
+                    userDetails.getEmployee());
             return getResponseEntity(responseDtoList, "승인전 휴가 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
@@ -162,8 +162,8 @@ public class VacationController {
             return getFieldErrorResponseEntity(bindingResult, "휴가 승인/거절 실패");
         }
         try {
-            if (!userDetails.getEmployee().getRole().equals(UserRole.MANAGER)) {
-                throw new IllegalArgumentException("휴가 승인은 관리자만 할 수 있습니다.");
+            if (userDetails.getEmployee().getRole().equals(UserRole.USER)) {
+                throw new IllegalArgumentException("USER권한은 휴가 승인 권한이 없습니다.");
             }
             VacationResponse responseDto = vacationServiceImpl.updateVacationApprovalStatus(
                     vacationId, requestDto);
@@ -223,14 +223,15 @@ public class VacationController {
     /**
      * 연차 정보 조회
      */
-    @GetMapping("/vacation/annual-Leave")
-    public ResponseEntity<CommonResponse> getAnnualVacation(
+    @GetMapping("/annual-leave")
+    public ResponseEntity<CommonResponse> getAnnualLeaveInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
-            AnnualLeaveResponseDto responseDto = vacationServiceImpl.getAnnualLeave(userDetails.getEmployee());
-            return getResponseEntity(responseDto, "휴가 종류 수정 성공");
+            AnnualLeaveInfoResponse responseDto = vacationServiceImpl.getAnnualLeaveInfo(userDetails.getEmployee());
+            return getResponseEntity(responseDto, "연차 정보 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
     }
+
 }

@@ -8,10 +8,10 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnnualLeaveResponseDto {
+public class AnnualLeaveInfoResponse {
     private Long employeeId;
     private String employeeUserName;
-    private int totalAnnualVacation;
-    private int usedAnnualVacation;
-    private int remainingAnnualVacation;
+    private float totalAnnualLeave;
+    private float usedAnnualLeave;
+    private float remainingAnnualLeave;
 }

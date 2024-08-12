@@ -3,11 +3,13 @@ package com.sparta.nexusteam.employee.entity;
 import com.sparta.nexusteam.employee.dto.EmployeeRequest;
 import com.sparta.nexusteam.employee.dto.InviteSignupRequest;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
+import com.sparta.nexusteam.vacation.entity.Vacation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,10 +61,14 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     private Department department;
 
+    @Column(nullable= false)
     private LocalDate hireDate;
 
     @ManyToOne
     private Company company;
+
+    @OneToMany(mappedBy="employee", cascade=CascadeType.ALL, orphanRemoval = true)
+    private List<Vacation> vacations;
 
     public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company, Department department) {
         accountId = request.getAccountId();

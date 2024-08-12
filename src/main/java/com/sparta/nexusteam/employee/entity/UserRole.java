@@ -1,5 +1,6 @@
 package com.sparta.nexusteam.employee.entity;
 
+
 import lombok.Getter;
 
 @Getter
@@ -13,7 +14,6 @@ public enum UserRole {
     UserRole(String authority) {
         this.authority = authority;
     }
-
     public static class Authority {
         public static final String USER = "ROLE_USER";
         public static final String MANAGER = "ROLE_MANAGER";
