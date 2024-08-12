@@ -156,6 +156,10 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label for="editWage" class="form-label">Wage</label>
+                        <input type="text" class="form-control" id="editWage" required>
+                    </div>
+                    <div class="mb-3">
                         <label for="editRole" class="form-label">Role</label>
                         <select class="form-select" id="editRole" required>
                             <option value="MANAGER">MANAGER</option>
@@ -361,6 +365,7 @@
                 document.getElementById('editAddress').value = employeeData.address;
                 document.getElementById('editPosition').value = employeeData.position;
                 await populateDepartmentOptions(employeeData.departmentName);
+                document.getElementById('editWage').value = employeeData.wage;
                 document.getElementById('editRole').value = employeeData.role;
                 document.getElementById('editEmployeeId').value = employeeId;
 
@@ -434,6 +439,7 @@
                 address: document.getElementById('editAddress').value,
                 position: document.getElementById('editPosition').value, // 열거형 이름을 직접 사용
                 department: document.getElementById('editDepartment').value, // 부서 이름을 사용하여 참조
+                wage: document.getElementById('editWage').value,
                 role: document.getElementById('editRole').value // 열거형 이름을 직접 사용
             };
 
