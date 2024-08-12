@@ -62,10 +62,10 @@ public class EmployeeController {
     }
 
     @GetMapping("/api/permission")
-    public boolean isManger(
+    public String getEmployeeRole(
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
-        return employeeServiceImpl.isManger(userDetails.getEmployee());
+        return employeeServiceImpl.getEmployeeRole(userDetails.getEmployee());
     }
 
     @PostMapping("/employee/invite")
