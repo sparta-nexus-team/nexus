@@ -1,9 +1,6 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main  # main 브랜치에 push될 때마다 실행
   pull_request:
     branches:
       - main
