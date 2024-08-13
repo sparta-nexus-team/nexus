@@ -34,7 +34,7 @@ jobs:
         run: docker save nexus:latest -o ./nexus.tar
 
       - name: Grant read permission for gradlew
-        run: chmod +x ./nexus.tar
+        run: chmod +r ./nexus.tar
 
       - name: Transfer Docker image to EC2
         uses: appleboy/scp-action@v0.1.3
