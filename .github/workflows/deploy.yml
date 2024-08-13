@@ -31,7 +31,7 @@ jobs:
         run: docker build -t nexus:latest .
 
       - name: Save Docker image as tar
-        run: docker save nexus:latest -o my-app.tar
+        run: docker save nexus:latest -o nexus.tar
 
       - name: Transfer Docker image to EC2
         uses: appleboy/scp-action@v0.1.3
@@ -39,7 +39,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_KEY }}
-          source: "my-app.tar"
+          source: "nexus.tar"
           target: "~/"
 
       - name: Load Docker image on EC2
@@ -49,7 +49,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker load -i ~/my-app.tar
-            docker stop my-spring-app || true
-            docker rm my-spring-app || true
-            docker run -d --name my-spring-app -p 8080:8080 nexus:latest
+            docker load -i ~/nexus.tar
+            docker stop nexus || true
+            docker rm nexus || true
+            docker run -d --name nexus -p 8080:8080 nexus:latest
