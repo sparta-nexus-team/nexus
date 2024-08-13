@@ -36,9 +36,10 @@ jobs:
       - name: Transfer Docker image to EC2
         uses: appleboy/scp-action@v0.1.3
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ SSH_HOST }}
           username: ubuntu
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ SSH_KEY }}
+          port: 22
           source: "nexus.tar"
           target: "~/"
 
