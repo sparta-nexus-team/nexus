@@ -54,6 +54,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_KEY }}
           script: |
+            docker rmi nexus || true
             docker load -i ~/nexus.tar
             docker stop nexus || true
             docker rm nexus || true
