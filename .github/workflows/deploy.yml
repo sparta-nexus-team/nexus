@@ -1,7 +1,7 @@
 name: CI/CD Pipeline
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 jobs:
@@ -42,7 +42,6 @@ jobs:
           port: 22
           source: "nexus.tar"
           target: "~/"
-          debug: true
 
 
       - name: Load Docker image on EC2
