@@ -46,6 +46,7 @@ public class VacationRepositoryCustomImpl implements VacationRepositoryCustom {
                 .where(vacation.isAnnualLeave.eq(true)
                         .and(vacation.employee.id.eq(employeeId))
                         .and(vacation.startDate.after(GrantDateTime))
+                        .and(vacation.approvalStatus.ne(ApprovalStatus.DENIED))
                 )
                 .fetch();
     }
