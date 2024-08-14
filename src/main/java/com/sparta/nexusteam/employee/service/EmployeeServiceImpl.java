@@ -77,7 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public String inviteEmployee(String email, Employee employee) {
-        if(!UserRole.MANAGER.equals(employee.getRole())){
+        if(UserRole.USER.equals(employee.getRole())){
             throw new AccessDeniedException("권한이 없습니다");
         }
 
