@@ -119,11 +119,15 @@
     stopTimer();
 
     const endTime = new Date();
-    const workTime = Math.floor((endTime - new Date(localStorage.getItem('startTime'))) / 1000); // 로컬 스토리지에서 출석 시간 불러오기
+    const workTime = Math.floor((endTime - new Date(localStorage.getItem('startTime'))) / 1000); // 근무 시간 계산 (초 단위)
 
+    // 근무 시간을 시, 분으로 변환
     const hours = Math.floor(workTime / 3600);
     const minutes = Math.floor((workTime % 3600) / 60);
     const timeWorked = `PT${hours}H${minutes}M`;
+
+    // 근무 시간을 로컬 스토리지에 저장
+    localStorage.setItem('workTime', workTime);
 
     const token = localStorage.getItem('token'); // 토큰 가져오기
     const requestData = {
@@ -188,17 +192,26 @@
                 endTimeMessage.style.color = '#28a745'; // 텍스트 색상 (녹색)
                 endTimeMessage.style.marginTop = '20px'; // 상단 여백 추가
 
+                // 근무 시간 표시
+                const storedWorkTime = localStorage.getItem('workTime');
+                const totalTimeWorked = formatTime(parseInt(storedWorkTime)); // 총 근무 시간 형식화
+                const endTimeDisplay = document.createElement('div');
+                endTimeDisplay.textContent = `근무 시간: ${totalTimeWorked}`;
+                endTimeDisplay.style.fontSize = '1.5em';
+                endTimeDisplay.style.textAlign = 'center';
+                endTimeDisplay.style.color = '#333'; // 텍스트 색상 (진한 회색)
+                endTimeDisplay.style.marginTop = '10px'; // 상단 여백 추가
 
-// 두 요소를 DOM에 추가
-                document.getElementById('mainContent').appendChild(endTimeMessage);
-
+                // 두 요소를 DOM에 추가
+                const mainContent = document.getElementById('mainContent');
+                mainContent.appendChild(endTimeMessage);
+                mainContent.appendChild(endTimeDisplay);
 
                 // 타이머 영역에 추가
                 const timerElement = document.getElementById('timer');
                 timerElement.innerHTML = ''; // 기존 타이머 지우기
                 timerElement.appendChild(endTimeMessage);
                 timerElement.appendChild(endTimeDisplay);
-
               } else { // 출석 중인 상태
                 const storedStartTime = localStorage.getItem('startTime');
                 if (storedStartTime) { // 이미 출석 중이었던 경우
@@ -216,6 +229,8 @@
               console.error('Error fetching work status:', error);
             });
   });
+
+  // 한국 시간을 반환하는 함수
   function getKoreanDate() {
     const now = new Date();
     const kstOffset = 9 * 60 * 60 * 1000; // 9시간(UTC+9) 밀리초
