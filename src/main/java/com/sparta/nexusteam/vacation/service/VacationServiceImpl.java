@@ -63,7 +63,7 @@ public class VacationServiceImpl implements VacationService {
         Vacation vacation;
         Duration vacationDuration = Duration.between(requestDto.getStartDate(),
                 requestDto.getEndDate());
-        // 0이면 연차 휴가로 저장
+        // 0이 아니면 휴가 종류를 가지는 일반 휴가로 저장
         if (vacationTypeId != 0) {
             VacationTypeHistory vacationTypeHistory = vacationTypeHistoryRepository.findTopByVacationTypeIdOrderByIdDesc(
                             vacationTypeId)
@@ -73,7 +73,7 @@ public class VacationServiceImpl implements VacationService {
             }
             vacation = new Vacation(requestDto.getStartDate(), requestDto.getEndDate(),
                     vacationTypeHistory, employee);
-        } else {
+        } else { // 0이면 연차 휴가로 저장
             if (getAnnualLeaveInfo(employee).getRemainingAnnualLeave() < vacationDuration.toDays() + (
                     vacationDuration.toHours() % 24 / 8)) {
                 throw new IllegalArgumentException("남은 연차 보다 많은 휴가를 사용할 수 없습니다.");
@@ -87,20 +87,24 @@ public class VacationServiceImpl implements VacationService {
         vacation = vacationRepository.save(vacation);
         return new VacationResponse(vacation);
     }
-
+    @Override
+    public List<VacationResponse> getVacationsRequest(Employee employee) {
+        List<Vacation> vacations = vacationRepository.findByApprovalStatusAndEmployeeId(ApprovalStatus.PENDING, employee.getId());
+        return vacations.stream().map(VacationResponse::new).toList();
+    }
     @Override
 //    @Cacheable(value = "vacationsBeforeUse", key = "#employee.id")
     public List<VacationResponse> getVacationsBeforeUse(Employee employee) {
-        List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdOrderByStartDateAsc(
-                LocalDateTime.now(), employee.getId());
+        List<Vacation> vacationList = vacationRepository.findByEndDateAfterAndEmployeeIdAndApprovalStatusOrderByStartDateAsc(
+                LocalDateTime.now(), employee.getId(), ApprovalStatus.APPROVED);
         return vacationList.stream().map(VacationResponse::new).toList();
     }
 
     @Override
 //    @Cacheable(value = "vacationsAfterUse", key = "#employee.id")
     public List<VacationResponse> getVacationsAfterUse(Employee employee) {
-        List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdOrderByStartDateDesc(
-                LocalDateTime.now(), employee.getId());
+        List<Vacation> vacationList = vacationRepository.findByEndDateBeforeAndEmployeeIdAndApprovalStatusOrderByStartDateDesc(
+                LocalDateTime.now(), employee.getId(), ApprovalStatus.APPROVED);
         return vacationList.stream().map(VacationResponse::new).toList();
     }
 
@@ -208,4 +212,6 @@ public class VacationServiceImpl implements VacationService {
         return new AnnualLeaveInfoResponse(employee.getId(), employee.getUserName(),
                 totalAnnualLeave, usedAnnualLeave, remainingAnnualLeave);
     }
+
+
 }

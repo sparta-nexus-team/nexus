@@ -77,6 +77,7 @@ public class Employee {
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
+        hireDate = request.getHireDate();
         this.position = position;
         this.role = role;
         this.company = company;

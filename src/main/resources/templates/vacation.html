@@ -71,6 +71,19 @@
     </div>
 
 
+    <!-- 휴가 요청 내역 섹션 -->
+    <div>
+      <h5 style="margin-top:40px;">휴가 요청 내역</h5>
+      <div id="vacation-request-container">
+        <!-- <div style="margin-top:20px;" class="list-group">
+      <a class="list-group-item list-group-item-action" data-bs-toggle="offcanvas" data-bs-target="#vacationInfo"
+        aria-controls="vacationInfo">승인상태 휴가종류 시작날짜</a>
+    </div> -->
+      </div>
+    </div>
+
+
+
     <!-- 휴가 사용 계획 섹션 -->
     <div>
       <h5 style="margin-top:40px;">휴가 사용 계획</h5>
@@ -114,34 +127,34 @@
       <button type="button" id="submitButton" class="btn btn-secondary">휴가 신청</button>
       <span id="check"></span>
     </div>
+  </div>
 
-    <!--휴가 요청 정보 Offcanvas-->
-    <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacation-request-info"
-      aria-labelledby="vacation-request-info-label">
-      <div class="offcanvas-header mb-5">
-        <h5 class="offcanvas-title" id="vacation-request-info-label"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
 
-      <div class="mb-3">
-        <h6 id="offc-vacation-request-type"></h6>
-      </div>
-
-      <div class="mb-3">
-        <h6 id="offc-vacation-request-start-date"></h6>
-      </div>
-
-      <div class="mb-3">
-        <h6 id="offc-vacation-request-end-date" d></h6>
-      </div>
-
-      <div class="mb-3">
-        <h6 id="offc-vacation-request-approval" d></h6>
-      </div>
-
-      <button type="button" id="vacation-delete-button" class="btn btn-outline-danger">삭제</button>
+  <!--휴가 요청 정보 Offcanvas-->
+  <div class="offcanvas offcanvas-end w-25 p-3" tabindex="-1" id="vacation-request-info"
+    aria-labelledby="vacation-request-info-label">
+    <div class="offcanvas-header mb-5">
+      <h5 class="offcanvas-title" id="vacation-request-info-label"></h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
+    <div class="mb-3">
+      <h6 id="offc-vacation-request-type"></h6>
+    </div>
+
+    <div class="mb-3">
+      <h6 id="offc-vacation-request-start-date"></h6>
+    </div>
+
+    <div class="mb-3">
+      <h6 id="offc-vacation-request-end-date" d></h6>
+    </div>
+
+    <div class="mb-3">
+      <h6 id="offc-vacation-request-approval" d></h6>
+    </div>
+
+    <button type="button" id="vacation-delete-button" class="btn btn-outline-danger">삭제</button>
   </div>
 
   <!--휴가 기록 정보 Offcanvas-->
@@ -322,6 +335,24 @@
 
 
       });
+      //휴가 요청 내역 목록 등록
+      fetch('/vacation/request', {
+        method: 'GET',
+        credentials: "include"
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          const requestContainer = document.getElementById('vacation-request-container');
+          data.data.forEach(vacation => {
+            addlist(vacation, requestContainer);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+
+
       //휴가 사용 계획 목록 등록
       fetch('/vacation/before', {
         method: 'GET',
@@ -359,6 +390,7 @@
 
 
       function addlist(vacation, container) {
+        const requestContainer = document.getElementById('vacation-request-container');
         const recordContainer = document.getElementById('vacation-record-container');
         const planContainer = document.getElementById('vacation-plan-container');
         // list-group 생성
@@ -369,11 +401,11 @@
         // list-group-itme 생성
         let item = document.createElement('a');
         item.className = 'list-group-item list-group-item-action';
-        if (container == planContainer) {
+        if (container == requestContainer) {
           item.setAttribute('data-bs-toggle', 'offcanvas');
           item.setAttribute('data-bs-target', '#vacation-request-info');
           item.setAttribute('aria-controls', 'vacation-request-info');
-        } else if (container == recordContainer) {
+        } else if (container == planContainer || container == recordContainer) {
           item.setAttribute('data-bs-toggle', 'offcanvas');
           item.setAttribute('data-bs-target', '#vacationInfo');
           item.setAttribute('aria-controls', 'vacationInfo');
@@ -396,7 +428,7 @@
 
         // 클릭시 offcanvas 값 변경
         item.addEventListener('click', function () {
-          if (container == planContainer) {
+          if (container == requestContainer) {
             const offcanvasTitle = document.getElementById('vacation-request-info-label');
             offcanvasTitle.textContent = `${vacation.employeeUserName}의 휴가`;
             const vacationType = document.getElementById('offc-vacation-request-type');
@@ -410,7 +442,7 @@
             // 휴가 요청 정보 offcanvas면 삭제버튼 추가에 휴가 ID값 추가
             let vdb = document.getElementById("vacation-delete-button");
             vdb.setAttribute('data-id', vacation.id);
-          } else if (container == recordContainer) {
+          } else if (container == planContainer || container == recordContainer) {
             const offcanvasTitle = document.getElementById('vacationInfoLabel');
             offcanvasTitle.textContent = `${vacation.employeeUserName}의 휴가`;
             const vacationType = document.getElementById('offc-vacation-type');
