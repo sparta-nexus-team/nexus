@@ -10,12 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.Optional;
 
 @Repository
 public interface WorkRepository extends JpaRepository<Work,Long> {
-    Work findByEmployeeAndWorkDate(Employee employee,Date date);
-
+    Optional<Work> findByEmployeeAndWorkDate(Employee employee,Date date);
+    Boolean existsByEmployeeAndWorkDate(Employee employee, LocalDate date);
     @Query("select w from Work w WHERE w.employee.company.id = :employee_id and w.workDate = :today")
     Page<Work> findWorkByToday(
             Pageable pageable,

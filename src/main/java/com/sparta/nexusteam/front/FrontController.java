@@ -24,4 +24,9 @@ public class FrontController {
     public String home(){
         return "home.html";
     }
+
+    @GetMapping("/work")
+    public String work(){
+        return "work.html";
+    }
 }
