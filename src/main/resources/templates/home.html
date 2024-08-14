@@ -194,6 +194,9 @@
             userIsManager = await checkUserPermission(); // 권한 체크 결과에 따라 사용자 역할 설정
             console.log("userIsManager:", userIsManager); // userIsManager 값을 콘솔에 출력
             await loadEmployeeList();
+            if (userIsManager === "MANAGER" || userIsManager === "ADMIN") {
+                addInviteButton(); // 권한이 있을 때만 초대 버튼 추가
+            }
         } catch (error) {
             console.error('권한 확인 중 오류 발생:', error);
         }
@@ -743,6 +746,78 @@
                 console.error('권한 확인 중 오류 발생:', error);
                 return "USER";
             }
+        }
+
+        function addInviteButton() {
+            // 초대 버튼을 생성하여 화면에 추가
+            const inviteButtonHtml = `
+            <button class="btn btn-primary ms-2" id="inviteEmployeeBtn">사원 초대</button>
+        `;
+            const searchInputContainer = document.querySelector('.justify-content-between.align-items-center.mb-3');
+            console.log(searchInputContainer);
+            if (searchInputContainer) {
+                searchInputContainer.insertAdjacentHTML('beforeend', inviteButtonHtml);
+
+                document.getElementById('inviteEmployeeBtn').addEventListener('click', function () {
+                    openInviteEmployeeModal();
+                });
+            } else {
+                console.error('Search input container not found');
+            }
+        }
+
+        function openInviteEmployeeModal() {
+            const modalHtml = `
+        <div class="modal fade" id="inviteEmployeeModal" tabindex="-1" aria-labelledby="inviteEmployeeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="inviteEmployeeModalLabel">사원 초대</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="inviteEmployeeForm">
+                            <div class="mb-3">
+                                <label for="inviteEmployeeEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="inviteEmployeeEmail" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary" id="sendInvite">초대하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('inviteEmployeeModal'));
+            modal.show();
+
+            document.getElementById('sendInvite').addEventListener('click', async function () {
+                const email = document.getElementById('inviteEmployeeEmail').value;
+
+                try {
+                    const response = await fetch('/employee/invite', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('Authorization')}`
+                        },
+                        body: JSON.stringify({ email })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to send invite');
+                    }
+
+                    alert('초대 성공');
+                    modal.hide();
+                } catch (error) {
+                    alert('초대 실패: ' + error.message);
+                }
+            });
         }
 
         // 초기화 함수 호출
