@@ -87,7 +87,11 @@ public class VacationServiceImpl implements VacationService {
         vacation = vacationRepository.save(vacation);
         return new VacationResponse(vacation);
     }
-
+    @Override
+    public List<VacationResponse> getVacationsRequest(Employee employee) {
+        List<Vacation> vacations = vacationRepository.findByApprovalStatusAndEmployeeId(ApprovalStatus.PENDING, employee.getId());
+        return vacations.stream().map(VacationResponse::new).toList();
+    }
     @Override
 //    @Cacheable(value = "vacationsBeforeUse", key = "#employee.id")
     public List<VacationResponse> getVacationsBeforeUse(Employee employee) {
@@ -208,4 +212,6 @@ public class VacationServiceImpl implements VacationService {
         return new AnnualLeaveInfoResponse(employee.getId(), employee.getUserName(),
                 totalAnnualLeave, usedAnnualLeave, remainingAnnualLeave);
     }
+
+
 }
