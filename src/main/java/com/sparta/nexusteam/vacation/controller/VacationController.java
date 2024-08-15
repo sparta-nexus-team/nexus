@@ -78,7 +78,23 @@ public class VacationController {
     }
 
     /**
-     * 휴가 사용전 리스트 조회
+     * 휴가 요청 내역 리스트 조회
+     */
+    @GetMapping("/vacation/request")
+    public ResponseEntity<CommonResponse> getVacationsRequest(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        try {
+            List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsRequest(
+                    userDetails.getEmployee());
+            return getResponseEntity(responseDtoList, "휴가 요청 내역 리스트 조회 성공");
+        } catch (Exception e) {
+            return getBadRequestResponseEntity(e);
+        }
+    }
+
+
+    /**
+     * 휴가 사용 계획 리스트 조회
      */
     @GetMapping("/vacation/before")
     public ResponseEntity<CommonResponse> getVacationsBeforeUse(
@@ -86,14 +102,14 @@ public class VacationController {
         try {
             List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsBeforeUse(
                     userDetails.getEmployee());
-            return getResponseEntity(responseDtoList, "휴가 사용전 리스트 조회 성공");
+            return getResponseEntity(responseDtoList, "휴가 사용 계획 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }
     }
 
     /**
-     * 휴가 사용후 리스트 조회
+     * 휴가 사용 기록 리스트 조회
      */
     @GetMapping("/vacation/after")
     public ResponseEntity<CommonResponse> getVacationsAfterUse(
@@ -101,7 +117,7 @@ public class VacationController {
         try {
             List<VacationResponse> responseDtoList = vacationServiceImpl.getVacationsAfterUse(
                     userDetails.getEmployee());
-            return getResponseEntity(responseDtoList, "휴가 사용후 리스트 조회 성공");
+            return getResponseEntity(responseDtoList, "휴가 사용 기록 리스트 조회 성공");
         } catch (Exception e) {
             return getBadRequestResponseEntity(e);
         }

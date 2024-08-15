@@ -16,6 +16,8 @@ public interface VacationService {
 
     VacationResponse createVacation(Long vacationTypeId, PostVacationRequest requestDto, Employee employee);
 
+    List<VacationResponse> getVacationsRequest(Employee employee);
+
     List<VacationResponse> getVacationsBeforeUse(Employee employee);
 
     List<VacationResponse> getVacationsAfterUse(Employee employee);

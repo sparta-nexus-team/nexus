@@ -65,13 +65,13 @@
             const phoneNumber = document.getElementById('phoneNumber').value;
             const address = document.getElementById('address').value;
             const companyName = document.getElementById('companyName').value;
-
+            const hireDate = document.getElementById('hire-date').value;
             fetch('/api/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ accountId, password, userName, email, phoneNumber, address, companyName })
+                body: JSON.stringify({ accountId, password, userName, email, phoneNumber, address, companyName ,hireDate})
             })
                 .then(response => {
                     if (response.ok) {
