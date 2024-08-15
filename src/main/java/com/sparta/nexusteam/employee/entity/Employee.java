@@ -4,6 +4,7 @@ import com.sparta.nexusteam.employee.dto.EmployeeRequest;
 import com.sparta.nexusteam.employee.dto.InviteSignupRequest;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
 import com.sparta.nexusteam.vacation.entity.Vacation;
+import com.sparta.nexusteam.work.entity.Work;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -71,6 +72,9 @@ public class Employee {
 
     @OneToMany(mappedBy="employee", cascade=CascadeType.ALL, orphanRemoval = true)
     private List<Vacation> vacations;
+
+    @OneToMany(mappedBy="employee", cascade=CascadeType.ALL, orphanRemoval = true)
+    private List<Work> works;
 
     public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company, Department department) {
         accountId = request.getAccountId();

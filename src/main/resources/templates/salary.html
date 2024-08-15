@@ -22,16 +22,19 @@
                     <a class="nav-link" href="#" id="employeeListBtn">구성원</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">급여</a>
+                    <a class="nav-link" href="/salary">급여</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">근무</a>
+                    <a class="nav-link" href="/work">근무</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/vacation">휴가</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/vacation-manage">휴가관리</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/work/companyWork">사원근무기록</a>
                 </li>
             </ul>
         </div>
@@ -122,7 +125,7 @@
     // Fetch salary data
     async function fetchSalaryData() {
         try {
-            const response = await fetch('/salary');
+            const response = await fetch('/api/salary');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
