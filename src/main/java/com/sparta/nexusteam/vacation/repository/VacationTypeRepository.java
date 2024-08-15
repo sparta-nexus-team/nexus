@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VacationTypeRepository extends JpaRepository<VacationType, Long> {
-    List<VacationType> findByCompanyId(Long CompanyId);
+    List<VacationType> findByCompanyIdAndIsDeletedFalse(Long CompanyId);
 }

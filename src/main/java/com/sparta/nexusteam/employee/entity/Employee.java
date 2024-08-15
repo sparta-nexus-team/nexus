@@ -3,10 +3,13 @@ package com.sparta.nexusteam.employee.entity;
 import com.sparta.nexusteam.employee.dto.EmployeeRequest;
 import com.sparta.nexusteam.employee.dto.InviteSignupRequest;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
+import com.sparta.nexusteam.vacation.entity.Vacation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,8 +61,14 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     private Department department;
 
+    @Column(nullable= false)
+    private LocalDate hireDate;
+
     @ManyToOne
     private Company company;
+
+    @OneToMany(mappedBy="employee", cascade=CascadeType.ALL, orphanRemoval = true)
+    private List<Vacation> vacations;
 
     public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company, Department department) {
         accountId = request.getAccountId();
@@ -68,6 +77,7 @@ public class Employee {
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
+        hireDate = request.getHireDate();
         this.position = position;
         this.role = role;
         this.company = company;
@@ -81,6 +91,7 @@ public class Employee {
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
+        hireDate = request.getHireDate();
         this.position = position;
         this.role = role;
         this.company = company;
@@ -91,13 +102,13 @@ public class Employee {
         refreshToken = newRefreshToken;
     }
 
-    public void updateProfile(EmployeeRequest request) {
+    public void updateProfile(EmployeeRequest request, Position position, Department department, UserRole role) {
         userName = request.getUserName();
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
-        position = request.getPosition();
-        department = request.getDepartment();
-        role = request.getRole();
+        this.position = position;
+        this.role = role;
+        this.department = department;
     }
 }

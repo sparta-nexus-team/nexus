@@ -42,6 +42,10 @@
                     <label for="companyName" class="form-label">회사명</label>
                     <input type="text" class="form-control" id="companyName" name="companyName" required>
                 </div>
+                <div class="mb-3">
+                    <label for="hire-date" class="form-label">입사일</label>
+                    <input type="date" class="form-control" id="hire-date" name="hire-date" required>
+                </div>
                 <button type="submit" class="btn btn-primary w-100">가입</button>
                 <div id="signupError" style="display:none; color:red;"></div>
             </form>
@@ -61,13 +65,13 @@
             const phoneNumber = document.getElementById('phoneNumber').value;
             const address = document.getElementById('address').value;
             const companyName = document.getElementById('companyName').value;
-
+            const hireDate = document.getElementById('hire-date').value;
             fetch('/api/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ accountId, password, userName, email, phoneNumber, address, companyName })
+                body: JSON.stringify({ accountId, password, userName, email, phoneNumber, address, companyName ,hireDate})
             })
                 .then(response => {
                     if (response.ok) {

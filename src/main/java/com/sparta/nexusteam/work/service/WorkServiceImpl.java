@@ -1,7 +1,6 @@
 package com.sparta.nexusteam.work.service;
 
 import com.sparta.nexusteam.employee.entity.Employee;
-import com.sparta.nexusteam.work.dto.DateRequest;
 import com.sparta.nexusteam.work.dto.WorkRequest;
 import com.sparta.nexusteam.work.dto.WorkResponse;
 import com.sparta.nexusteam.work.entity.Work;
@@ -38,22 +37,10 @@ public class WorkServiceImpl implements WorkService {
 //            @CacheEvict(value = "workMonth", key = "#employee.id")
 //    })
     public Long saveWork(Employee employee,WorkRequest workRequest){
+        SalaryType salaryType = workRequest.getSalary_type();
         Duration work_time = workRequest.getWork_time();
-
-        //기준 설정 시간
-        Duration eightHours = Duration.ofHours(8);
-        Duration eightAndHalfHours = Duration.ofHours(8).plusMinutes(30);
-
-        SalaryType salaryType;
-        if(work_time.compareTo(eightHours) <= 0){
-            //근무시간이 8시간 이하인 경우
-            salaryType = SalaryType.VACATION;
-        }else if (work_time.compareTo(eightAndHalfHours) <= 0){
-            salaryType = SalaryType.CUSTOMIZED_WORK;
-        }else{
-            salaryType = SalaryType.OVER_WORK;
-        }
-        Work work = new Work(employee,salaryType,work_time);
+        String message = workRequest.getMessage();
+        Work work = new Work(employee,salaryType,message,work_time);
         workRepository.save(work);
         return work.getId();
     }
@@ -81,23 +68,15 @@ public class WorkServiceImpl implements WorkService {
 //            @CacheEvict(value = "workMonth", key = "#employee.id")
 //    })
     public String deleteWork(Employee employee, Date date) {
-        Work work = workRepository.findByEmployeeAndWorkDate(employee,date).
-                orElseThrow(()-> new IllegalArgumentException("해당 날짜에 근무가 등록 되어있지 않습니다."));
+        Work work =workRepository.findByEmployeeAndWorkDate(employee,date);
         workRepository.delete(work);
         return "삭제 완료";
-    }
-
-    @Override
-    public Boolean checkWorkStatusToday(Employee employee, DateRequest date){
-
-        Boolean checkWork = workRepository.existsByEmployeeAndWorkDate(employee, date.getDate());
-        return checkWork;
     }
 
     //회원 근무 당일 조회
     @Override
     @Transactional
-    //@Cacheable(value = "workDay", key = "#employee.id")
+    @Cacheable(value = "workDay", key = "#employee.id")
     public Page<WorkResponse> getDayWork(Employee employee, Pageable pageable){
         // 현재 날짜를 LocalDate로 가져오기
         LocalDate localDate = LocalDate.now();
@@ -115,7 +94,7 @@ public class WorkServiceImpl implements WorkService {
     //회원 근무 주간 조회
     @Override
     @Transactional
-    //@Cacheable(value = "workWeek", key = "#employee.id")
+    @Cacheable(value = "workWeek", key = "#employee.id")
     public Page<WorkResponse> getWeekWork(Employee employee, Pageable pageable) {
         LocalDate today = LocalDate.now();
 
@@ -132,7 +111,7 @@ public class WorkServiceImpl implements WorkService {
 
     //회원 근무 월간 조회
     @Transactional
-    //@Cacheable(value = "workMonth", key = "#employee.id")
+    @Cacheable(value = "workMonth", key = "#employee.id")
     public Page<WorkResponse> getMonthWork(Employee employee,Pageable pageable) {
         LocalDate today = LocalDate.now();
 
@@ -148,7 +127,7 @@ public class WorkServiceImpl implements WorkService {
     //직원 근무 당일 조회
     @Override
     @Transactional
-    //@Cacheable(value = "memberWorkDay", key = "#company_id")
+    @Cacheable(value = "memberWorkDay", key = "#company_id")
     public Page<WorkResponse> getMemberDayWork(Long company_id, Pageable pageable) {
         // 현재 날짜를 LocalDate로 가져오기
         LocalDate localDate = LocalDate.now();
@@ -165,7 +144,7 @@ public class WorkServiceImpl implements WorkService {
     //직원 근무 주간 조회
     @Override
     @Transactional
-    //@Cacheable(value = "memberWorkWeek", key = "#company_id")
+    @Cacheable(value = "memberWorkWeek", key = "#company_id")
     public Page<WorkResponse> getMemberWeekWork(Long company_id,Pageable pageable){
         LocalDate today = LocalDate.now();
 
