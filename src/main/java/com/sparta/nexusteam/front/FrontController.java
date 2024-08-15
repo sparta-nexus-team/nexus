@@ -1,7 +1,12 @@
 package com.sparta.nexusteam.front;
 
+import com.sparta.nexusteam.employee.entity.UserRole;
+import com.sparta.nexusteam.security.UserDetailsImpl;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class FrontController {
@@ -20,18 +25,20 @@ public class FrontController {
         return "signup.html";
     }
 
-    @GetMapping("/main")
+    @GetMapping("/home")
     public String home(){
         return "home.html";
+    }
+
+    @GetMapping("/salary")
+    public String salary(){
+        return "salary.html";
     }
 
     @GetMapping("/work")
     public String work(){
         return "work.html";
     }
-
-    @GetMapping("/work/myWork")
-    public String myWork(){ return "mywork.html"; }
 
     @GetMapping("/work/companyWork")
     public String companyWork(){ return "companywork.html"; }
