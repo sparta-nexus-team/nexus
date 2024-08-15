@@ -2,7 +2,9 @@ package com.sparta.nexusteam.work.controller;
 
 import com.sparta.nexusteam.base.CommonResponse;
 import com.sparta.nexusteam.base.ControllerUtil;
+import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.security.UserDetailsImpl;
+import com.sparta.nexusteam.work.dto.DateRequest;
 import com.sparta.nexusteam.work.dto.WorkRequest;
 import com.sparta.nexusteam.work.dto.WorkResponse;
 import com.sparta.nexusteam.work.entity.Work;
@@ -12,11 +14,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @RestController
@@ -81,6 +86,14 @@ public class WorkController {
         }
     }
 
+    @PostMapping("/today-status")
+    public ResponseEntity<CommonResponse> checkWorkStatusToday(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody DateRequest dateRequest){
+        Boolean checkWork = workService.checkWorkStatusToday(userDetails.getEmployee(),dateRequest);
+        return ControllerUtil.getResponseEntity(checkWork,"근무 확인");
+    }
+
     @GetMapping("/today")
     public ResponseEntity<CommonResponse> getDayWork(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -102,7 +115,7 @@ public class WorkController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "work_date") String sortBy
+            @RequestParam(defaultValue = "workDate") String sortBy
             ){
 
         try{

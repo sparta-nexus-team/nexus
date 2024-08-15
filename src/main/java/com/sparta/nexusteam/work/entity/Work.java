@@ -23,28 +23,33 @@ public class Work {
     private Duration work_time;
 
     @Temporal(TemporalType.DATE)
-    @Column(unique = true)
     private Date workDate;
 
     @Enumerated(EnumType.STRING)
     private SalaryType salaryType;
 
-    private String message;
 
-    @Enumerated(EnumType.STRING)
-    private AllowedStatus allowed_status = AllowedStatus.WORK_NOT_ALLOWED;
-
-
-    public Work(Employee employee, SalaryType salaryType, String message, Duration work_time) {
+    public Work(Employee employee, SalaryType salaryType, Duration work_time) {
         this.employee = employee;
         this.salaryType = salaryType;
-        this.message = message;
         this.work_time = work_time;
     }
     public void update(WorkRequest request){
-        this.salaryType = request.getSalary_type();
-        this.message = request.getMessage();
+        //기준 설정 시간
+        Duration eightHours = Duration.ofHours(8);
+        Duration eightAndHalfHours = Duration.ofHours(8).plusMinutes(30);
+
         this.work_time = request.getWork_time();
+
+        if(request.getWork_time().compareTo(eightHours) <= 0){
+            //근무시간이 8시간 이하인 경우
+            this.salaryType = SalaryType.VACATION;
+        }else if (work_time.compareTo(eightAndHalfHours) <= 0){
+            this.salaryType = SalaryType.CUSTOMIZED_WORK;
+        }else{
+            this.salaryType = SalaryType.OVER_WORK;
+        }
+
     }
     @PrePersist
     protected void onCreate(){
