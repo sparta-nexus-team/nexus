@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>근무 - Nexus.team</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    #chartContainer {
+      width: 80%;
+      margin: auto;
+      padding-top: 50px;
+    }
+    .btn-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    #timer {
+      font-size: 2em;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+    #workHistory {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="#">Nexus.team</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/home" id="employeeListBtn">구성원</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/salary">급여</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/work">근무</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/vacation">휴가</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/vacation-manage">휴가관리</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/work/companyWork">사원근무기록</a>
+        </li>
+      </ul>
+    </div>
+    <div class="d-flex align-items-center">
+      <span class="me-3" id="userName"></span>
+      <a class="btn btn-outline-danger" href="/logout">로그아웃</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8" id="mainContent">
+      <div class="mb-3 text-center">
+        <button id="startWorkBtn" class="btn btn-success">출석</button>
+        <button id="endWorkBtn" class="btn btn-danger hidden">퇴근</button>
+        <div id="timer">00:00:00</div>
+      </div>
+      <div id="chartContainer">
+        <canvas id="workHoursChart"></canvas>
+      </div>
+      <div id="workHistory" class="hidden">
+        <h4>근무 내역</h4>
+        <ul id="workHistoryList" class="list-group">
+          <!-- 근무 내역이 여기에 추가됩니다 -->
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const startWorkBtn = document.getElementById('startWorkBtn');
+    const endWorkBtn = document.getElementById('endWorkBtn');
+    const timerDisplay = document.getElementById('timer');
+    const myWorkLink = document.getElementById('myWorkLink');
+    const workHistory = document.getElementById('workHistory');
+    const workHistoryList = document.getElementById('workHistoryList');
+    let startTime, timerInterval;
+
+    function startTimer() {
+      startTime = new Date();
+      timerInterval = setInterval(updateTimer, 1000);
+      timerDisplay.classList.remove('hidden');
+    }
+
+    function updateTimer() {
+      const currentTime = new Date();
+      const elapsedTime = new Date(currentTime - startTime);
+
+      const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
+      const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+
+      timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function toggleWork() {
+      fetch('/api/work/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timestamp: new Date().toISOString() })
+      }).then(response => response.json())
+              .then(data => {
+                console.log('작업 시간 기록됨:', data);
+
+                if (data.status === 'workStarted') {
+                  startTimer();
+                  startWorkBtn.classList.add('hidden');
+                  endWorkBtn.classList.remove('hidden');
+                } else if (data.status === 'workEnded') {
+                  stopTimer();
+                  startWorkBtn.classList.remove('hidden');
+                  endWorkBtn.classList.add('hidden');
+                }
+              })
+              .catch(error => {
+                console.error('작업 시간 기록 실패:', error);
+              });
+    }
+
+    function fetchWorkHistory() {
+      fetch('/api/work/worked-time-by-date')
+              .then(response => response.json())
+              .then(data => {
+                workHistoryList.innerHTML = ''; // 이전 내역 초기화
+                data.forEach(item => {
+                  const listItem = document.createElement('li');
+                  listItem.classList.add('list-group-item');
+                  listItem.textContent = item;
+                  workHistoryList.appendChild(listItem);
+                });
+                workHistory.classList.remove('hidden');
+              })
+              .catch(error => {
+                console.error('근무 내역 불러오기 실패:', error);
+              });
+    }
+
+    startWorkBtn.addEventListener('click', toggleWork);
+    endWorkBtn.addEventListener('click', toggleWork);
+    myWorkLink.addEventListener('click', function(event) {
+      event.preventDefault();
+      fetchWorkHistory();
+    });
+  });
+</script>
+</body>
+</html>
