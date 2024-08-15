@@ -1,58 +1,42 @@
 package com.sparta.nexusteam.work.entity;
 
 import com.sparta.nexusteam.employee.entity.Employee;
-import com.sparta.nexusteam.work.dto.WorkRequest;
+import jakarta.persistence.Entity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Duration;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Entity
-@NoArgsConstructor
 @Getter
+@Setter
+@Entity
 public class Work {
+
     @Id
-    @GeneratedValue(strategy =GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private LocalDate date;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Duration workedTime;
+    private Duration overtime; // 초과 근무 시간을 저장하는 필드
 
     @ManyToOne
     private Employee employee;
 
-    private Duration work_time;
 
-    @Temporal(TemporalType.DATE)
-    private Date workDate;
-
-    @Enumerated(EnumType.STRING)
-    private SalaryType salaryType;
-
-
-    public Work(Employee employee, SalaryType salaryType, Duration work_time) {
+    public Work(Employee employee, LocalDate date, LocalDateTime startTime) {
         this.employee = employee;
-        this.salaryType = salaryType;
-        this.work_time = work_time;
+        this.date = date;
+        this.startTime = startTime;
     }
-    public void update(WorkRequest request){
-        //기준 설정 시간
-        Duration eightHours = Duration.ofHours(8);
-        Duration eightAndHalfHours = Duration.ofHours(8).plusMinutes(30);
 
-        this.work_time = request.getWork_time();
+    public Work() {
 
-        if(request.getWork_time().compareTo(eightHours) <= 0){
-            //근무시간이 8시간 이하인 경우
-            this.salaryType = SalaryType.VACATION;
-        }else if (work_time.compareTo(eightAndHalfHours) <= 0){
-            this.salaryType = SalaryType.CUSTOMIZED_WORK;
-        }else{
-            this.salaryType = SalaryType.OVER_WORK;
-        }
-
-    }
-    @PrePersist
-    protected void onCreate(){
-        this.workDate = new Date();
     }
 }
