@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.util.Date;
 @Getter
 public class WorkResponse {
-    private Duration work_time;
+    private String work_time;
 
     private Date work_date;
 
@@ -16,7 +16,7 @@ public class WorkResponse {
 
 
     public WorkResponse(Work work) {
-        this.work_time = work.getWork_time();
+        this.work_time = work.getWork_time().toHours()+" : "+work.getWork_time().toMinutes()%60;
         this.work_date = work.getWorkDate();
         this.salary_type = work.getSalaryType();
 

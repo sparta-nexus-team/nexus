@@ -29,4 +29,10 @@ public class FrontController {
     public String work(){
         return "work.html";
     }
+
+    @GetMapping("/work/myWork")
+    public String myWork(){ return "mywork.html"; }
+    
+    @GetMapping("/work/companyWork")
+    public String companyWork(){ return "companywork.html"; }
 }

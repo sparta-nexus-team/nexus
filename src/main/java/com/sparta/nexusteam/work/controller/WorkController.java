@@ -115,7 +115,7 @@ public class WorkController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "work_date") String sortBy
+            @RequestParam(defaultValue = "workDate") String sortBy
             ){
 
         try{

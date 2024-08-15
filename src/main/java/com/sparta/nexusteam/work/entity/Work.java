@@ -23,7 +23,6 @@ public class Work {
     private Duration work_time;
 
     @Temporal(TemporalType.DATE)
-    @Column(unique = true)
     private Date workDate;
 
     @Enumerated(EnumType.STRING)
