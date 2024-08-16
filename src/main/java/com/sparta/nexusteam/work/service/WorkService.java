@@ -5,6 +5,7 @@ import com.sparta.nexusteam.security.UserDetailsImpl;
 import com.sparta.nexusteam.work.entity.Work;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.time.Duration;
@@ -14,9 +15,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface WorkService {
-    Work toggleWork(@AuthenticationPrincipal UserDetailsImpl userDetails);
-    String getFormattedWorkedTime(@AuthenticationPrincipal UserDetailsImpl userDetails);
-    List<String> getWorkedTimeByDate(@AuthenticationPrincipal UserDetailsImpl userDetails);
-    List<String> getWorkDetailsByDate(LocalDate date);
+    ResponseEntity<Map<String, String>> toggleWork(@AuthenticationPrincipal UserDetailsImpl userDetails);
+    ResponseEntity<Map<String, String>> getFormattedWorkedTime(@AuthenticationPrincipal UserDetailsImpl userDetails);
     Map<Employee, Duration> calculateMonthlyOvertime();
+    ResponseEntity<List<Map<String, String>>> getWorkedTimeByDate(@AuthenticationPrincipal UserDetailsImpl userDetails);
+    ResponseEntity<List<Map<String, String>>> getWorkDetailsByDate(LocalDate date);
+
+
 }

@@ -95,7 +95,6 @@
     const startWorkBtn = document.getElementById('startWorkBtn');
     const endWorkBtn = document.getElementById('endWorkBtn');
     const timerDisplay = document.getElementById('timer');
-    const myWorkLink = document.getElementById('myWorkLink');
     const workHistory = document.getElementById('workHistory');
     const workHistoryList = document.getElementById('workHistoryList');
     let startTime, timerInterval;
@@ -103,6 +102,7 @@
     function startTimer() {
       startTime = new Date();
       timerInterval = setInterval(updateTimer, 1000);
+      console.log('호출함');
       timerDisplay.classList.remove('hidden');
     }
 
@@ -113,7 +113,7 @@
       const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
       const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
       const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
-
+      console.log('호출됨');
       timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
     }
 
@@ -167,10 +167,9 @@
 
     startWorkBtn.addEventListener('click', toggleWork);
     endWorkBtn.addEventListener('click', toggleWork);
-    myWorkLink.addEventListener('click', function(event) {
-      event.preventDefault();
-      fetchWorkHistory();
-    });
+
+    // 페이지 로드 시 근무 내역 자동 호출
+    fetchWorkHistory();
   });
 </script>
 </body>

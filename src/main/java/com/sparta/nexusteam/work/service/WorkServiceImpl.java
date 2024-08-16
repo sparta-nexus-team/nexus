@@ -7,6 +7,8 @@ import com.sparta.nexusteam.work.entity.Work;
 import com.sparta.nexusteam.work.repository.WorkRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +32,12 @@ public class WorkServiceImpl implements WorkService {
     private static final Duration MINIMUM_WORK_HOURS = Duration.ofHours(8);
     private static final Duration EXTRA_HOUR = Duration.ofHours(1);
 
-    public Work toggleWork(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<Map<String, String>> toggleWork(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Employee employee = userDetails.getEmployee();  // Employee 객체를 가져옴
         LocalDate today = LocalDate.now();
         Optional<Work> existingWork = workRepository.findByEmployeeAndDate(employee, today);
+
+        Map<String, String> response = new HashMap<>();
 
         if (existingWork.isPresent()) {
             Work work = existingWork.get();
@@ -57,66 +61,80 @@ public class WorkServiceImpl implements WorkService {
                     }
                 }
 
-                return workRepository.save(work);
+                workRepository.save(work);
+                response.put("status", "workEnded");
+                response.put("message", "퇴근 기록이 성공적으로 저장되었습니다.");
             } else {
                 throw new IllegalStateException("이미 오늘 퇴근 기록이 있습니다.");
             }
         } else {
             Work newWork = new Work(employee, today, LocalDateTime.now());
-            return workRepository.save(newWork);
+            workRepository.save(newWork);
+            response.put("status", "workStarted");
+            response.put("message", "출근 기록이 성공적으로 저장되었습니다.");
         }
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public String getFormattedWorkedTime(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<Map<String, String>> getFormattedWorkedTime(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Employee employee = userDetails.getEmployee();
         LocalDate today = LocalDate.now();
         Work work = workRepository.findByEmployeeAndDate(employee, today)
                 .orElseThrow(() -> new IllegalStateException("오늘의 출퇴근 기록이 없습니다."));
 
+        Map<String, String> response = new HashMap<>();
         if (work.getWorkedTime() == null) {
-            return "퇴근 기록 없음";
+            response.put("message", "퇴근 기록 없음");
+        } else {
+            response.put("총 일한 시간", formatDuration(work.getWorkedTime()));
+            response.put("초과 근무 시간", formatDuration(work.getOvertime()));
         }
 
-        return String.format("총 일한 시간: %s, 초과 근무 시간: %s",
-                formatDuration(work.getWorkedTime()),
-                formatDuration(work.getOvertime()));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public List<String> getWorkedTimeByDate(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<Map<String, String>>> getWorkedTimeByDate(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Employee employee = userDetails.getEmployee();
         List<Work> works = workRepository.findAll().stream()
                 .filter(work -> work.getEmployee().equals(employee))
                 .collect(Collectors.toList());
 
-        return works.stream()
+        List<Map<String, String>> responseList = works.stream()
                 .map(work -> {
-                    String date = work.getDate().toString();
-                    String workedTime = work.getWorkedTime() != null
+                    Map<String, String> response = new HashMap<>();
+                    response.put("date", work.getDate().toString());
+                    response.put("일한 시간", work.getWorkedTime() != null
                             ? formatDuration(work.getWorkedTime())
-                            : "퇴근 기록 없음";
-                    String overtime = work.getOvertime() != null
+                            : "퇴근 기록 없음");
+                    response.put("초과 근무 시간", work.getOvertime() != null
                             ? formatDuration(work.getOvertime())
-                            : "없음";
-                    return String.format("%s - 일한 시간: %s, 초과 근무 시간: %s", date, workedTime, overtime);
+                            : "없음");
+                    return response;
                 })
                 .collect(Collectors.toList());
+
+        return new ResponseEntity<>(responseList, HttpStatus.OK);
     }
 
-    public List<String> getWorkDetailsByDate(LocalDate date) {
+    public ResponseEntity<List<Map<String, String>>> getWorkDetailsByDate(LocalDate date) {
         List<Work> works = workRepository.findAllByDate(date);
 
-        return works.stream()
+        List<Map<String, String>> responseList = works.stream()
                 .map(work -> {
-                    String employeeName = work.getEmployee().getUserName(); // Employee 이름
-                    String workedTime = work.getWorkedTime() != null
+                    Map<String, String> response = new HashMap<>();
+                    response.put("사원", work.getEmployee().getUserName());
+                    response.put("일한 시간", work.getWorkedTime() != null
                             ? formatDuration(work.getWorkedTime())
-                            : "퇴근 기록 없음";
-                    String overtime = work.getOvertime() != null
+                            : "퇴근 기록 없음");
+                    response.put("초과 근무 시간", work.getOvertime() != null
                             ? formatDuration(work.getOvertime())
-                            : "없음";
-                    return String.format("사원: %s, 일한 시간: %s, 초과 근무 시간: %s", employeeName, workedTime, overtime);
+                            : "없음");
+                    return response;
                 })
                 .collect(Collectors.toList());
+
+        return new ResponseEntity<>(responseList, HttpStatus.OK);
     }
 
     public Map<Employee, Duration> calculateMonthlyOvertime() {
