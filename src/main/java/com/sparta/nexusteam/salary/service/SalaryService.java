@@ -57,7 +57,7 @@ public class SalaryService {
         // 월 기본 급여 계산
         double monthlyBaseSalary = employee.getWage();
 
-        double over_time = overtime.toHours();
+        double over_time = overtime.toMinutes();
         // 월 연장 근무 수당 계산
         double overtimePay = over_time * hourlyWage * 1.5;
 
