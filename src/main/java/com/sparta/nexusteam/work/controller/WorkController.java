@@ -30,7 +30,7 @@ public class WorkController {
         return workService.getWorkedTimeByDate(userDetails);
     }
 
-    @GetMapping("/work/date/{date}")
+    @GetMapping("/date/{date}")
     public ResponseEntity<List<Map<String, String>>> getWorkDetailsByDate(@PathVariable String date) {
         LocalDate localDate = LocalDate.parse(date);
         return workService.getWorkDetailsByDate(localDate);

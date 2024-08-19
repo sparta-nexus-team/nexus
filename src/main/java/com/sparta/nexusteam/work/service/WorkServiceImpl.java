@@ -97,8 +97,8 @@ public class WorkServiceImpl implements WorkService {
     public ResponseEntity<List<Map<String, String>>> getWorkedTimeByDate(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Employee employee = userDetails.getEmployee();
         List<Work> works = workRepository.findAll().stream()
-                .filter(work -> work.getEmployee().equals(employee))
-                .collect(Collectors.toList());
+                .filter(work -> work.getEmployee().getId().equals(employee.getId()))
+                .toList();
 
         List<Map<String, String>> responseList = works.stream()
                 .map(work -> {
