@@ -95,7 +95,6 @@
     const startWorkBtn = document.getElementById('startWorkBtn');
     const endWorkBtn = document.getElementById('endWorkBtn');
     const timerDisplay = document.getElementById('timer');
-    const myWorkLink = document.getElementById('myWorkLink');
     const workHistory = document.getElementById('workHistory');
     const workHistoryList = document.getElementById('workHistoryList');
     let startTime, timerInterval;
@@ -103,6 +102,7 @@
     function startTimer() {
       startTime = new Date();
       timerInterval = setInterval(updateTimer, 1000);
+      console.log('호출함');
       timerDisplay.classList.remove('hidden');
     }
 
@@ -113,7 +113,7 @@
       const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
       const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
       const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
-
+      console.log('호출됨');
       timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
     }
 
@@ -149,28 +149,44 @@
 
     function fetchWorkHistory() {
       fetch('/api/work/worked-time-by-date')
-              .then(response => response.json())
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.json();
+              })
               .then(data => {
                 workHistoryList.innerHTML = ''; // 이전 내역 초기화
+
                 data.forEach(item => {
                   const listItem = document.createElement('li');
                   listItem.classList.add('list-group-item');
-                  listItem.textContent = item;
+
+                  // item에서 각 필드를 추출하여 사용
+                  const date = item["date"];
+                  const workedTime = item["일한 시간"];
+                  const overtime = item["초과 근무 시간"];
+
+                  // 리스트 아이템의 텍스트 구성
+                  listItem.textContent = `날짜: ${date}, 일한 시간: ${workedTime}, 초과 근무 시간: ${overtime}`;
+
+                  // 리스트에 추가
                   workHistoryList.appendChild(listItem);
                 });
+
                 workHistory.classList.remove('hidden');
               })
               .catch(error => {
                 console.error('근무 내역 불러오기 실패:', error);
+                workHistoryList.innerHTML = '<li class="list-group-item text-danger">근무 내역을 불러오는 중 오류가 발생했습니다.</li>';
               });
     }
 
     startWorkBtn.addEventListener('click', toggleWork);
     endWorkBtn.addEventListener('click', toggleWork);
-    myWorkLink.addEventListener('click', function(event) {
-      event.preventDefault();
-      fetchWorkHistory();
-    });
+
+    // 페이지 로드 시 근무 내역 자동 호출
+    fetchWorkHistory();
   });
 </script>
 </body>

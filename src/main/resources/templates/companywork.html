@@ -78,8 +78,13 @@
     const workDetails = document.getElementById('workDetails');
 
     function fetchWorkDetails(date) {
-      fetch(`/work/date/${date}`)
-              .then(response => response.json())
+      fetch(`/api/work/date/${date}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.json();
+              })
               .then(data => {
                 workDetailsList.innerHTML = ''; // 이전 기록 초기화
 
@@ -89,7 +94,16 @@
                   data.forEach(item => {
                     const listItem = document.createElement('li');
                     listItem.classList.add('list-group-item');
-                    listItem.textContent = item;
+
+                    // API에서 받은 Map<String, String> 데이터를 사용하여 각 항목을 표시
+                    const employeeName = item["사원"];
+                    const workedTime = item["일한 시간"];
+                    const overtime = item["초과 근무 시간"];
+
+                    // 표시할 내용을 작성
+                    listItem.textContent = `사원: ${employeeName}, 일한 시간: ${workedTime}, 초과 근무 시간: ${overtime}`;
+
+                    // 리스트에 항목 추가
                     workDetailsList.appendChild(listItem);
                   });
                 }
