@@ -49,4 +49,7 @@ public class Salary {
 
     @Column(name = "employment_insurance", precision = 10, scale = 2)
     private BigDecimal employmentInsurance; // 고용보험
+
+    @Column(name = "amount_wage", precision = 10, scale = 2)
+    private BigDecimal amountWage; // 실수령액
 }
