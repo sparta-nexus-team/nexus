@@ -4,6 +4,7 @@ import com.sparta.nexusteam.employee.dto.EmployeeRequest;
 import com.sparta.nexusteam.employee.dto.InviteSignupRequest;
 import com.sparta.nexusteam.employee.dto.SignupRequest;
 import com.sparta.nexusteam.vacation.entity.Vacation;
+import com.sparta.nexusteam.work.entity.Work;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -51,6 +52,8 @@ public class Employee {
     @Column(nullable = false)
     private Position position; //직급
 
+    @Column(nullable = false)
+    private double wage = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -69,6 +72,9 @@ public class Employee {
 
     @OneToMany(mappedBy="employee", cascade=CascadeType.ALL, orphanRemoval = true)
     private List<Vacation> vacations;
+
+    @OneToMany(mappedBy="employee", cascade=CascadeType.ALL, orphanRemoval = true)
+    private List<Work> works;
 
     public Employee(SignupRequest request, String encodedPassword, Position position, UserRole role, Company company, Department department) {
         accountId = request.getAccountId();
@@ -102,12 +108,13 @@ public class Employee {
         refreshToken = newRefreshToken;
     }
 
-    public void updateProfile(EmployeeRequest request, Position position, Department department, UserRole role) {
+    public void updateProfile(EmployeeRequest request, Position position, Department department, Double wage, UserRole role) {
         userName = request.getUserName();
         email = request.getEmail();
         phoneNumber = request.getPhoneNumber();
         address = request.getAddress();
         this.position = position;
+        this.wage = wage;
         this.role = role;
         this.department = department;
     }

@@ -1,177 +1,165 @@
 package com.sparta.nexusteam.work.service;
 
-import com.sparta.nexusteam.employee.entity.Employee;
-import com.sparta.nexusteam.work.dto.WorkRequest;
-import com.sparta.nexusteam.work.dto.WorkResponse;
-import com.sparta.nexusteam.work.entity.Work;
-import com.sparta.nexusteam.work.entity.SalaryType;
-import com.sparta.nexusteam.work.repository.WorkRepository;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.*;
-import java.time.temporal.TemporalAdjusters;
-import java.util.Date;
+import com.sparta.nexusteam.employee.entity.Employee;
+import com.sparta.nexusteam.security.UserDetailsImpl;
+import com.sparta.nexusteam.work.entity.Work;
+import com.sparta.nexusteam.work.repository.WorkRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class WorkServiceImpl implements WorkService {
 
-    private final WorkRepository workRepository;
+    @Autowired
+    private WorkRepository workRepository;
 
-    public WorkServiceImpl(WorkRepository workRepository) {
-        this.workRepository = workRepository;
-    }
+    private static final Duration REGULAR_WORK_HOURS = Duration.ofHours(9);
+    private static final Duration MINIMUM_WORK_HOURS = Duration.ofHours(8);
+    private static final Duration EXTRA_HOUR = Duration.ofHours(1);
 
-    //근무 요청
-    @Override
-    @Transactional
-    /*@Caching(evict = {
-            @CacheEvict(value = "workDay", key = "#employee.id"),
-            @CacheEvict(value = "workWeek", key = "#employee.id"),
-            @CacheEvict(value = "workMonth", key = "#employee.id")
-    })*/
-    public Long saveWork(Employee employee,WorkRequest workRequest){
-        SalaryType salaryType = workRequest.getSalary_type();
-        Duration work_time = workRequest.getWork_time();
-        String message = workRequest.getMessage();
-        Work work = new Work(employee,salaryType,message,work_time);
-        workRepository.save(work);
-        return work.getId();
-    }
-
-    //근무 수근
-    @Override
-    @Transactional
-    /*@Caching(put = {
-            @CachePut(value = "workDay", key = "#employee.id"),
-            @CachePut(value = "workWeek", key = "#employee.id"),
-            @CachePut(value = "workMonth", key = "#employee.id")
-    })*/
-    public Long updateWork(Employee employee,Date date ,WorkRequest workRequest) {
-        Work work = workRepository.findByEmployeeAndWorkDate(employee,date);
-        work.update(workRequest);
-        return work.getId();
-    }
-    //근무 삭제
-    @Override
-    @Transactional
-    /*@Caching(evict = {
-            @CacheEvict(value = "workDay", key = "#employee.id"),
-            @CacheEvict(value = "workWeek", key = "#employee.id"),
-            @CacheEvict(value = "workMonth", key = "#employee.id")
-    })*/
-    public String deleteWork(Employee employee, Date date) {
-        Work work =workRepository.findByEmployeeAndWorkDate(employee,date);
-        workRepository.delete(work);
-        return "삭제 완료";
-    }
-
-    //회원 근무 당일 조회
-    @Override
-    @Transactional
-    /*@Cacheable(value = "workDay", key = "#employee.id")*/
-    public Page<WorkResponse> getDayWork(Employee employee, Pageable pageable){
-        // 현재 날짜를 LocalDate로 가져오기
-        LocalDate localDate = LocalDate.now();
-
-        // LocalDate를 ZonedDateTime으로 변환
-        ZonedDateTime zonedDateTime = localDate.atStartOfDay(ZoneId.systemDefault());
-
-        // ZonedDateTime을 Date로 변환
-        Date today = Date.from(zonedDateTime.toInstant());
-        Page<Work> workPages = workRepository.findWorkByToday(pageable, employee.getId(),today);
-
-        return workPages.map(work -> new WorkResponse(work));
-    }
-
-    //회원 근무 주간 조회
-    @Override
-    @Transactional
-    /*@Cacheable(value = "workWeek", key = "#employee.id")*/
-    public Page<WorkResponse> getWeekWork(Employee employee, Pageable pageable) {
+    public ResponseEntity<Map<String, String>> toggleWork(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Employee employee = userDetails.getEmployee();  // Employee 객체를 가져옴
         LocalDate today = LocalDate.now();
+        Optional<Work> existingWork = workRepository.findByEmployeeAndDate(employee, today);
 
-        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        Map<String, String> response = new HashMap<>();
 
-        Date startDate = Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        if (existingWork.isPresent()) {
+            Work work = existingWork.get();
+            if (work.getEndTime() == null) {
+                work.setEndTime(LocalDateTime.now());
+                Duration workedTime = Duration.between(work.getStartTime(), work.getEndTime());
 
-        Page<Work> workPages= workRepository.findWorkByDateRange(pageable,employee.getId(),startDate,endDate);
+                // 자정을 넘어가는 경우 초과 근무 시간을 0으로 설정
+                if (!work.getStartTime().toLocalDate().equals(work.getEndTime().toLocalDate())) {
+                    work.setOvertime(Duration.ZERO);
+                } else {
+                    if (workedTime.compareTo(MINIMUM_WORK_HOURS) >= 0 && workedTime.compareTo(REGULAR_WORK_HOURS) <= 0) {
+                        work.setWorkedTime(MINIMUM_WORK_HOURS);
+                        work.setOvertime(workedTime.minus(MINIMUM_WORK_HOURS).minus(EXTRA_HOUR));
+                    } else if (workedTime.compareTo(REGULAR_WORK_HOURS) > 0) {
+                        work.setWorkedTime(MINIMUM_WORK_HOURS);
+                        work.setOvertime(workedTime.minus(MINIMUM_WORK_HOURS).minus(EXTRA_HOUR));
+                    } else {
+                        work.setWorkedTime(workedTime);
+                        work.setOvertime(Duration.ZERO);
+                    }
+                }
 
-        return workPages.map(work-> new WorkResponse(work));
+                workRepository.save(work);
+                response.put("status", "workEnded");
+                response.put("message", "퇴근 기록이 성공적으로 저장되었습니다.");
+            } else {
+                throw new IllegalStateException("이미 오늘 퇴근 기록이 있습니다.");
+            }
+        } else {
+            Work newWork = new Work(employee, today, LocalDateTime.now());
+            workRepository.save(newWork);
+            response.put("status", "workStarted");
+            response.put("message", "출근 기록이 성공적으로 저장되었습니다.");
+        }
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //회원 근무 월간 조회
-    @Transactional
-    /*@Cacheable(value = "workMonth", key = "#employee.id")*/
-    public Page<WorkResponse> getMonthWork(Employee employee,Pageable pageable) {
+    public ResponseEntity<Map<String, String>> getFormattedWorkedTime(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Employee employee = userDetails.getEmployee();
         LocalDate today = LocalDate.now();
+        Work work = workRepository.findByEmployeeAndDate(employee, today)
+                .orElseThrow(() -> new IllegalStateException("오늘의 출퇴근 기록이 없습니다."));
 
-        LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
-        LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
+        Map<String, String> response = new HashMap<>();
+        if (work.getWorkedTime() == null) {
+            response.put("message", "퇴근 기록 없음");
+        } else {
+            response.put("총 일한 시간", formatDuration(work.getWorkedTime()));
+            response.put("초과 근무 시간", formatDuration(work.getOvertime()));
+        }
 
-        Date startDate = Date.from(startOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(endOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-        Page<Work> workPages = workRepository.findWorkByDateRange(pageable,employee.getId(),startDate,endDate);
-        return workPages.map(work-> new WorkResponse(work));
-    }
-    //직원 근무 당일 조회
-    @Override
-    @Transactional
-    /*@Cacheable(value = "memberWorkDay", key = "#company_id")*/
-    public Page<WorkResponse> getMemberDayWork(Long company_id, Pageable pageable) {
-        // 현재 날짜를 LocalDate로 가져오기
-        LocalDate localDate = LocalDate.now();
-
-        // LocalDate를 ZonedDateTime으로 변환
-        ZonedDateTime zonedDateTime = localDate.atStartOfDay(ZoneId.systemDefault());
-
-        // ZonedDateTime을 Date로 변환
-        Date today = Date.from(zonedDateTime.toInstant());
-        Page<Work> workPages = workRepository.findWorkByCompanyAndToday(pageable,company_id,today);
-        return workPages.map(work-> new WorkResponse(work));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    //직원 근무 주간 조회
-    @Override
-    @Transactional
-    /*@Cacheable(value = "memberWorkWeek", key = "#company_id")*/
-    public Page<WorkResponse> getMemberWeekWork(Long company_id,Pageable pageable){
-        LocalDate today = LocalDate.now();
+    public ResponseEntity<List<Map<String, String>>> getWorkedTimeByDate(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Employee employee = userDetails.getEmployee();
+        List<Work> works = workRepository.findAll().stream()
+                .filter(work -> work.getEmployee().getId().equals(employee.getId()))
+                .toList();
 
-        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        List<Map<String, String>> responseList = works.stream()
+                .map(work -> {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("date", work.getDate().toString());
+                    response.put("일한 시간", work.getWorkedTime() != null
+                            ? formatDuration(work.getWorkedTime())
+                            : "퇴근 기록 없음");
+                    response.put("초과 근무 시간", work.getOvertime() != null
+                            ? formatDuration(work.getOvertime())
+                            : "없음");
+                    return response;
+                })
+                .collect(Collectors.toList());
 
-        Date startDate = Date.from(startOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(endOfWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-        Page<Work> workPages = workRepository.findWorkByCompanyAndDateRange(pageable,company_id,startDate,endDate);
-        return workPages.map(work->new WorkResponse(work));
+        return new ResponseEntity<>(responseList, HttpStatus.OK);
     }
 
-    //직원 근무 월간 조회
-    @Override
-    @Transactional
-    /*@Cacheable(value = "memberWorkMonth", key = "#company_id")*/
-    public Page<WorkResponse> getMemberMonthWork(Long company_id,Pageable pageable){
-        LocalDate today = LocalDate.now();
+    public ResponseEntity<List<Map<String, String>>> getWorkDetailsByDate(LocalDate date) {
+        List<Work> works = workRepository.findAllByDate(date);
 
-        LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
-        LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
+        List<Map<String, String>> responseList = works.stream()
+                .map(work -> {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("사원", work.getEmployee().getUserName());
+                    response.put("일한 시간", work.getWorkedTime() != null
+                            ? formatDuration(work.getWorkedTime())
+                            : "퇴근 기록 없음");
+                    response.put("초과 근무 시간", work.getOvertime() != null
+                            ? formatDuration(work.getOvertime())
+                            : "없음");
+                    return response;
+                })
+                .collect(Collectors.toList());
 
-        Date startDate = Date.from(startOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(endOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-        Page<Work> workPages = workRepository.findWorkByCompanyAndDateRange(pageable,company_id,startDate,endDate);
-        return workPages.map(work->new WorkResponse(work));
+        return new ResponseEntity<>(responseList, HttpStatus.OK);
     }
 
+    public Map<Employee, Duration> calculateMonthlyOvertime() {
+        LocalDate startDate = YearMonth.now().minusMonths(1).atDay(26); // 이전 달 26일
+        LocalDate endDate = YearMonth.now().atDay(25); // 이번 달 25일
+
+        List<Work> works = workRepository.findByDateBetween(startDate, endDate);
+        Map<Employee, Duration> overtimeMap = new HashMap<>();
+
+        for (Work work : works) {
+            Duration overtime = work.getOvertime();
+            if (overtime != null && !overtime.isNegative()) {
+                Employee employee = work.getEmployee();
+                overtimeMap.put(employee, overtimeMap.getOrDefault(employee, Duration.ZERO).plus(overtime));
+            }
+        }
+
+        return overtimeMap;
+    }
+
+    private String formatDuration(Duration duration) {
+        long hours = duration.toHours();
+        long minutes = duration.toMinutesPart();
+        long seconds = duration.toSecondsPart();
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
 }

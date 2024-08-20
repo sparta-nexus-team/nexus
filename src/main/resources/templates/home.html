@@ -53,10 +53,10 @@
                     <a class="nav-link" href="#" id="employeeListBtn">구성원</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">급여</a>
+                    <a class="nav-link" href="/salary">급여</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">근무</a>
+                    <a class="nav-link" href="/work">근무</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/vacation">휴가</a>
@@ -64,6 +64,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/vacation-manage">휴가관리</a>
                   </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/work/companyWork">사원근무기록</a>
+                </li>
             </ul>
         </div>
         <div class="d-flex align-items-center">
@@ -156,6 +159,10 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label for="editWage" class="form-label">Wage</label>
+                        <input type="text" class="form-control" id="editWage" required>
+                    </div>
+                    <div class="mb-3">
                         <label for="editRole" class="form-label">Role</label>
                         <select class="form-select" id="editRole" required>
                             <option value="MANAGER">MANAGER</option>
@@ -177,7 +184,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
         const employeeListBtn = document.getElementById('employeeListBtn');
-        const vacationBtn = document.getElementById('vacationBtn');
         const departmentList = document.getElementById('departmentList');
         const contextMenu = document.getElementById('contextMenu');
         const employeeSearchInput = document.getElementById('employeeSearch');
@@ -190,6 +196,9 @@
             userIsManager = await checkUserPermission(); // 권한 체크 결과에 따라 사용자 역할 설정
             console.log("userIsManager:", userIsManager); // userIsManager 값을 콘솔에 출력
             await loadEmployeeList();
+            if (userIsManager === "MANAGER" || userIsManager === "ADMIN") {
+                addInviteButton(); // 권한이 있을 때만 초대 버튼 추가
+            }
         } catch (error) {
             console.error('권한 확인 중 오류 발생:', error);
         }
@@ -197,10 +206,6 @@
         employeeListBtn.addEventListener('click', async function (event) {
             event.preventDefault();
             await loadEmployeeList();
-        });
-
-        vacationBtn.addEventListener('click', async function () {
-            window.location.href = '/vacation';
         });
 
         document.addEventListener('click', () => {
@@ -361,6 +366,7 @@
                 document.getElementById('editAddress').value = employeeData.address;
                 document.getElementById('editPosition').value = employeeData.position;
                 await populateDepartmentOptions(employeeData.departmentName);
+                document.getElementById('editWage').value = employeeData.wage.toFixed(0);
                 document.getElementById('editRole').value = employeeData.role;
                 document.getElementById('editEmployeeId').value = employeeId;
 
@@ -434,6 +440,7 @@
                 address: document.getElementById('editAddress').value,
                 position: document.getElementById('editPosition').value, // 열거형 이름을 직접 사용
                 department: document.getElementById('editDepartment').value, // 부서 이름을 사용하여 참조
+                wage: document.getElementById('editWage').value,
                 role: document.getElementById('editRole').value // 열거형 이름을 직접 사용
             };
 
@@ -737,6 +744,78 @@
                 console.error('권한 확인 중 오류 발생:', error);
                 return "USER";
             }
+        }
+
+        function addInviteButton() {
+            // 초대 버튼을 생성하여 화면에 추가
+            const inviteButtonHtml = `
+            <button class="btn btn-primary ms-2" id="inviteEmployeeBtn">사원 초대</button>
+        `;
+            const searchInputContainer = document.querySelector('.justify-content-between.align-items-center.mb-3');
+            console.log(searchInputContainer);
+            if (searchInputContainer) {
+                searchInputContainer.insertAdjacentHTML('beforeend', inviteButtonHtml);
+
+                document.getElementById('inviteEmployeeBtn').addEventListener('click', function () {
+                    openInviteEmployeeModal();
+                });
+            } else {
+                console.error('Search input container not found');
+            }
+        }
+
+        function openInviteEmployeeModal() {
+            const modalHtml = `
+        <div class="modal fade" id="inviteEmployeeModal" tabindex="-1" aria-labelledby="inviteEmployeeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="inviteEmployeeModalLabel">사원 초대</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="inviteEmployeeForm">
+                            <div class="mb-3">
+                                <label for="inviteEmployeeEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="inviteEmployeeEmail" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary" id="sendInvite">초대하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('inviteEmployeeModal'));
+            modal.show();
+
+            document.getElementById('sendInvite').addEventListener('click', async function () {
+                const email = document.getElementById('inviteEmployeeEmail').value;
+
+                try {
+                    const response = await fetch('/employee/invite', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('Authorization')}`
+                        },
+                        body: JSON.stringify({ email })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to send invite');
+                    }
+
+                    alert('초대 성공');
+                    modal.hide();
+                } catch (error) {
+                    alert('초대 실패: ' + error.message);
+                }
+            });
         }
 
         // 초기화 함수 호출

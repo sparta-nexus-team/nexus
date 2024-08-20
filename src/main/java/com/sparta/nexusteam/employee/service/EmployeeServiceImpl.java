@@ -77,7 +77,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public String inviteEmployee(String email, Employee employee) {
-        if(!UserRole.MANAGER.equals(employee.getRole())){
+        if(UserRole.USER.equals(employee.getRole())){
             throw new AccessDeniedException("권한이 없습니다");
         }
 
@@ -187,7 +187,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 부서 매핑 - 부서 이름으로 Department 객체 조회
         Department department = departmentRepository.findByNameAndCompany(request.getDepartment(), employeeDetail.getCompany());
 
-        employee.updateProfile(request, position, department, role);
+        employee.updateProfile(request, position, department, request.getWage() ,role);
 
         employeeRepository.save(employee);
 

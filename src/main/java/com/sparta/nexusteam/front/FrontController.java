@@ -1,6 +1,5 @@
 package com.sparta.nexusteam.front;
 
-import com.sparta.nexusteam.employee.entity.Employee;
 import com.sparta.nexusteam.employee.entity.UserRole;
 import com.sparta.nexusteam.security.UserDetailsImpl;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +29,19 @@ public class FrontController {
     public String home(){
         return "home.html";
     }
+
+    @GetMapping("/salary")
+    public String salary(){
+        return "salary.html";
+    }
+
+    @GetMapping("/work")
+    public String work(){
+        return "work.html";
+    }
+
+    @GetMapping("/work/companyWork")
+    public String companyWork(){ return "companywork.html"; }
 
     @GetMapping("/vacation")
     public String vacation(){return "vacation.html";}
